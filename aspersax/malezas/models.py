@@ -21,7 +21,8 @@ class MalezaDetectada(models.Model):
     id = models.AutoField(primary_key=True, editable=False, db_column='T005IdMalezaDetectada')
     jornada = models.ForeignKey(Jornada, on_delete=models.CASCADE, 
                               related_name='malezas_detectadas', db_column='T005IdJornada')
-    maleza = models.ForeignKey(Maleza, on_delete=models.CASCADE, db_column='T005IdMaleza')
+    maleza = models.ForeignKey(Maleza, on_delete=models.CASCADE, 
+                             related_name='maleza_detectada', db_column='T005IdMaleza')
     ubicacion = models.CharField(max_length=200, db_column='T005Ubicacion')  # Ejemplo: "Sector A - Sur"
     densidad = models.CharField(max_length=50, db_column='T005Densidad')    # Ejemplo: "Alta", "Media", "Baja"
     activo = models.BooleanField(default=True, db_column='T005Activo')

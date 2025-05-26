@@ -20,14 +20,10 @@ class ActualizarRobot(generics.UpdateAPIView):
     serializer_class = RobotSerializer
     lookup_field = 'id_robot'
 
-class RobotById(generics.ListAPIView):
+class RobotById(generics.RetrieveAPIView):
+    queryset = Robot.objects.all()
     serializer_class = RobotSerializer
-    
-    def get_queryset(self):
-        id_robot = self.kwargs.get('id_robot', None)
-        if id_robot:
-            return Robot.objects.filter(id_robot=id_robot)
-        raise NotFound(detail="No se proporcionó un ID de robot válido")
+    lookup_field = 'id_robot'
 
 class RobotsByEstado(generics.ListAPIView):
     serializer_class = RobotSerializer
