@@ -99,15 +99,16 @@ const theme = createTheme({
 });
 
 const Layout = ({ children }: { children: React.ReactNode }) => (
-  <Box sx={{ display: 'flex' }}>
+  <Box sx={{ display: 'flex', minHeight: '100vh' }}>
     <Navigation />
     <Box
       component="main"
       sx={{
         flexGrow: 1,
         p: 3,
-        ml: { sm: '240px' },
-        mt: 2,
+        ml: '240px',
+        width: 'calc(100% - 240px)',
+        backgroundColor: theme.palette.background.default,
       }}
     >
       {children}

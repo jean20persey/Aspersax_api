@@ -3,14 +3,24 @@ from django.db import models
 from jornadas.models import Jornada
 
 class Maleza(models.Model):
+    TIPOS = [
+        ('Hoja Ancha', 'Hoja Ancha'),
+        ('Hoja Angosta', 'Hoja Angosta'),
+        ('Gramínea', 'Gramínea'),
+        ('Otra', 'Otra'),
+    ]
+
     id_maleza = models.AutoField(primary_key=True, editable=False, db_column='T004IdMaleza')
-    nombre_comun = models.CharField(max_length=100, db_column='T004NombreComun')
-    nombre_cientifico = models.CharField(max_length=150, blank=True, null=True, db_column='T004NombreCientifico')
+    nombre = models.CharField(max_length=100, default="Maleza sin nombre", db_column='T004Nombre')
+    nombre_cientifico = models.CharField(max_length=200, blank=True, null=True, db_column='T004NombreCientifico')
+    tipo = models.CharField(max_length=50, choices=TIPOS, default='Otra', db_column='T004Tipo')
     descripcion = models.TextField(blank=True, null=True, db_column='T004Descripcion')
+    temporada = models.CharField(max_length=100, blank=True, null=True, db_column='T004Temporada')
+    resistencia_herbicida = models.BooleanField(default=False, db_column='T004ResistenciaHerbicida')
     activo = models.BooleanField(default=True, db_column='T004Activo')
     
     def __str__(self):
-        return self.nombre_comun
+        return f"{self.nombre} ({self.tipo})"
     
     class Meta:
         db_table = 'T004Maleza'
@@ -28,7 +38,7 @@ class MalezaDetectada(models.Model):
     activo = models.BooleanField(default=True, db_column='T005Activo')
     
     def __str__(self):
-        return f"{self.maleza.nombre_comun} detectada en jornada {self.jornada.id_jornada}"
+        return f"{self.maleza.nombre} ({self.maleza.tipo}) detectada en jornada {self.jornada.id_jornada}"
     
     class Meta:
         db_table = 'T005MalezaDetectada'

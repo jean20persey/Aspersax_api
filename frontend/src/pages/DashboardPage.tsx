@@ -5,25 +5,11 @@ import {
     Card,
     CardContent,
     Typography,
-    Button,
-    IconButton,
+    Grid,
     LinearProgress,
     useTheme,
-    TextField,
-    MenuItem,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    FormControl,
-    InputLabel,
-    Select,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
+    Alert,
+    SvgIcon,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -37,105 +23,68 @@ import {
     CartesianGrid,
     Tooltip,
     ResponsiveContainer,
-    BarChart,
-    Bar,
 } from 'recharts';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import WaterDropIcon from '@mui/icons-material/WaterDrop';
 import GrassIcon from '@mui/icons-material/Grass';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import AddIcon from '@mui/icons-material/Add';
+import TerrainIcon from '@mui/icons-material/Terrain';
 import PageHeader from '../components/PageHeader';
-import robotsService from '../services/robotsService';
+import dashboardService from '../services/dashboardService';
 
-// Datos de ejemplo para los gráficos
-const activityData = [
-    { name: 'Lun', robots: 4, malezas: 35 },
-    { name: 'Mar', robots: 3, malezas: 28 },
-    { name: 'Mie', robots: 5, malezas: 42 },
-    { name: 'Jue', robots: 6, malezas: 45 },
-    { name: 'Vie', robots: 4, malezas: 38 },
-    { name: 'Sab', robots: 3, malezas: 30 },
-    { name: 'Dom', robots: 5, malezas: 40 },
-];
-
-const jornadas = [
-    { id: 1, titulo: 'Fumigación Sector A', fecha: '2024-03-20', estado: 'Pendiente' },
-    { id: 2, titulo: 'Mantenimiento Robots', fecha: '2024-03-21', estado: 'Completado' },
-    { id: 3, titulo: 'Inspección Sector B', fecha: '2024-03-22', estado: 'En Progreso' },
-];
-
-interface Robot {
-    id: string;
-    nombre: string;
-    estado: string;
-    bateria: number;
-    ultima_actividad: string;
+interface DashboardStats {
+    total_robots: number;
+    robots_activos: number;
+    total_tanques: number;
+    tanques_en_uso: number;
+    total_malezas: number;
+    malezas_detectadas: number;
+    area_cubierta: number;
+    herbicida_usado: number;
 }
 
-const StatCard = ({ title, value, icon, color }: { title: string; value: string; icon: React.ReactNode; color: string }) => (
+interface ActivityData {
+    fecha: string;
+    robots: number;
+    malezas: number;
+}
+
+interface StatCardProps {
+    title: string;
+    value: string;
+    icon: typeof SvgIcon;
+    color: string;
+    subtitle?: string;
+}
+
+const StatCard: React.FC<StatCardProps> = ({ title, value, icon: Icon, color, subtitle }) => (
     <Card sx={{ height: '100%' }}>
         <CardContent>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <Box>
-                    <Typography color="textSecondary" gutterBottom variant="body2">
-                        {title}
-                    </Typography>
-                    <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
-                        {value}
-                    </Typography>
-                </Box>
-                <Box>
-                    <IconButton size="small">
-                        <MoreVertIcon />
-                    </IconButton>
-                </Box>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <Box
                     sx={{
+                        backgroundColor: `${color}15`,
+                        borderRadius: 2,
+                        p: 1,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        width: 40,
-                        height: 40,
-                        borderRadius: 1,
-                        backgroundColor: `${color}20`,
-                        color: color,
+                        mr: 2,
                     }}
                 >
-                    {icon}
+                    <Icon sx={{ color }} />
                 </Box>
+                <Typography variant="h6" color="text.secondary">
+                    {title}
+                </Typography>
             </Box>
-        </CardContent>
-    </Card>
-);
-
-const ProgressCard = ({ title, value, max, color }: { title: string; value: number; max: number; color: string }) => (
-    <Card sx={{ height: '100%' }}>
-        <CardContent>
-            <Typography color="textSecondary" gutterBottom variant="body2">
-                {title}
+            <Typography variant="h4" gutterBottom>
+                {value}
             </Typography>
-            <Box sx={{ mt: 2, mb: 1 }}>
-                <LinearProgress
-                    variant="determinate"
-                    value={(value / max) * 100}
-                    sx={{
-                        height: 8,
-                        borderRadius: 4,
-                        backgroundColor: `${color}20`,
-                        '& .MuiLinearProgress-bar': {
-                            backgroundColor: color,
-                            borderRadius: 4,
-                        },
-                    }}
-                />
-            </Box>
-            <Typography variant="body2" sx={{ mt: 1 }}>
-                {value} de {max} {title.toLowerCase()}
-            </Typography>
+            {subtitle && (
+                <Typography variant="body2" color="text.secondary">
+                    {subtitle}
+                </Typography>
+            )}
         </CardContent>
     </Card>
 );
@@ -146,57 +95,59 @@ const DashboardPage: React.FC = () => {
         start: dayjs().subtract(7, 'day'),
         end: dayjs(),
     });
-    const [openRobotDialog, setOpenRobotDialog] = useState(false);
-    const [newRobot, setNewRobot] = useState({
-        nombre: '',
-        estado: 'Disponible',
-    });
-    const [robots, setRobots] = useState<Robot[]>([]);
+    const [stats, setStats] = useState<DashboardStats | null>(null);
+    const [activityData, setActivityData] = useState<ActivityData[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        fetchRobots();
-    }, []);
-
-    const fetchRobots = async () => {
+    const fetchDashboardData = async () => {
         try {
-            const response = await robotsService.getAll();
-            setRobots(response.data);
-        } catch (error) {
-            console.error('Error al cargar robots:', error);
+            setLoading(true);
+            setError(null);
+
+            // Asegurarse de que las fechas estén en el formato correcto
+            const startDate = dateRange.start ? dateRange.start.format('YYYY-MM-DD') : dayjs().subtract(7, 'day').format('YYYY-MM-DD');
+            const endDate = dateRange.end ? dateRange.end.format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD');
+
+            const [statsResponse, activityResponse] = await Promise.all([
+                dashboardService.getStats(startDate, endDate),
+                dashboardService.getActivityData(startDate, endDate)
+            ]);
+
+            setStats(statsResponse.data);
+            setActivityData(activityResponse.data);
+        } catch (err: any) {
+            console.error('Error al cargar datos del dashboard:', err);
+            setError(err.response?.data?.error || 'Error al cargar los datos del dashboard. Por favor, intente nuevamente.');
         } finally {
             setLoading(false);
         }
     };
 
-    const handleAddRobot = async () => {
-        try {
-            await robotsService.create(newRobot);
-            setOpenRobotDialog(false);
-            setNewRobot({ nombre: '', estado: 'Disponible' });
-            fetchRobots(); // Recargar la lista de robots
-        } catch (error) {
-            console.error('Error al agregar robot:', error);
-        }
-    };
+    useEffect(() => {
+        fetchDashboardData();
+    }, [dateRange.start, dateRange.end]);
 
-    const handleDeleteRobot = async (id: string) => {
-        if (window.confirm('¿Estás seguro de que deseas eliminar este robot?')) {
-            try {
-                await robotsService.delete(id);
-                fetchRobots(); // Recargar la lista de robots
-            } catch (error) {
-                console.error('Error al eliminar robot:', error);
-            }
-        }
-    };
+    if (loading) {
+        return (
+            <Box sx={{ width: '100%', mt: 4 }}>
+                <LinearProgress />
+            </Box>
+        );
+    }
 
     return (
         <Box>
             <PageHeader title="Dashboard" />
             
+            {error && (
+                <Alert severity="error" sx={{ mb: 3 }}>
+                    {error}
+                </Alert>
+            )}
+
             {/* Filtros de tiempo */}
-            <Box sx={{ mb: 3 }}>
+            <Box sx={{ mb: 4 }}>
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                     <Box sx={{ width: { xs: '100%', sm: '50%', md: '33.33%' } }}>
                         <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -222,242 +173,78 @@ const DashboardPage: React.FC = () => {
             </Box>
 
             {/* Estadísticas principales */}
-            <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(4, 1fr)' } }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 3, mb: 4 }}>
                 <Box>
                     <StatCard
                         title="Robots Activos"
-                        value="8"
-                        icon={<SmartToyIcon />}
+                        value={`${stats?.robots_activos || 0}/${stats?.total_robots || 0}`}
+                        icon={SmartToyIcon}
                         color={theme.palette.primary.main}
+                        subtitle="Robots en operación"
                     />
                 </Box>
                 <Box>
                     <StatCard
                         title="Tanques en Uso"
-                        value="12"
-                        icon={<WaterDropIcon />}
+                        value={`${stats?.tanques_en_uso || 0}/${stats?.total_tanques || 0}`}
+                        icon={WaterDropIcon}
                         color={theme.palette.info.main}
+                        subtitle="Tanques activos"
                     />
                 </Box>
                 <Box>
                     <StatCard
                         title="Malezas Detectadas"
-                        value="156"
-                        icon={<GrassIcon />}
+                        value={stats?.malezas_detectadas?.toString() || '0'}
+                        icon={GrassIcon}
                         color={theme.palette.success.main}
+                        subtitle="En el período seleccionado"
                     />
                 </Box>
                 <Box>
                     <StatCard
-                        title="Jornadas Hoy"
-                        value="5"
-                        icon={<CalendarTodayIcon />}
+                        title="Área Cubierta"
+                        value={`${stats?.area_cubierta?.toFixed(2) || '0'} m²`}
+                        icon={TerrainIcon}
                         color={theme.palette.warning.main}
+                        subtitle={`${stats?.herbicida_usado?.toFixed(2) || '0'} L de herbicida usado`}
                     />
                 </Box>
             </Box>
 
-            {/* Gráficos de tendencias */}
-            <Box sx={{ mt: 3, display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' } }}>
-                <Box>
-                    <Card sx={{ height: '100%', minHeight: 400 }}>
-                        <CardContent>
-                            <Typography variant="h6" gutterBottom>
-                                Actividad de Robots
-                            </Typography>
-                            <ResponsiveContainer width="100%" height={350}>
-                                <LineChart data={activityData}>
-                                    <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis dataKey="name" />
-                                    <YAxis />
-                                    <Tooltip />
-                                    <Line type="monotone" dataKey="robots" stroke={theme.palette.primary.main} />
-                                </LineChart>
-                            </ResponsiveContainer>
-                        </CardContent>
-                    </Card>
-                </Box>
-                <Box>
-                    <Card sx={{ height: '100%', minHeight: 400 }}>
-                        <CardContent>
-                            <Typography variant="h6" gutterBottom>
-                                Malezas Detectadas
-                            </Typography>
-                            <ResponsiveContainer width="100%" height={350}>
-                                <BarChart data={activityData}>
-                                    <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis dataKey="name" />
-                                    <YAxis />
-                                    <Tooltip />
-                                    <Bar dataKey="malezas" fill={theme.palette.success.main} />
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </CardContent>
-                    </Card>
-                </Box>
-            </Box>
-
-            {/* Calendario de Jornadas */}
-            <Box sx={{ mt: 3 }}>
+            {/* Gráficos de actividad */}
+            <Box sx={{ mb: 4 }}>
+                <Typography variant="h6" gutterBottom>
+                    Actividad del Período
+                </Typography>
                 <Card>
                     <CardContent>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                            <Typography variant="h6">
-                                Próximas Jornadas
-                            </Typography>
-                            <Button
-                                variant="contained"
-                                startIcon={<AddIcon />}
-                                size="small"
-                            >
-                                Nueva Jornada
-                            </Button>
-                        </Box>
-                        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' } }}>
-                            {jornadas.map((jornada) => (
-                                <Card key={jornada.id} variant="outlined">
-                                    <CardContent>
-                                        <Typography variant="subtitle1" gutterBottom>
-                                            {jornada.titulo}
-                                        </Typography>
-                                        <Typography variant="body2" color="textSecondary">
-                                            Fecha: {new Date(jornada.fecha).toLocaleDateString()}
-                                        </Typography>
-                                        <Typography variant="body2" color="textSecondary">
-                                            Estado: {jornada.estado}
-                                        </Typography>
-                                    </CardContent>
-                                </Card>
-                            ))}
-                        </Box>
+                        <ResponsiveContainer width="100%" height={300}>
+                            <LineChart data={activityData}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="fecha" />
+                                <YAxis yAxisId="left" />
+                                <YAxis yAxisId="right" orientation="right" />
+                                <Tooltip />
+                                <Line
+                                    yAxisId="left"
+                                    type="monotone"
+                                    dataKey="robots"
+                                    stroke={theme.palette.primary.main}
+                                    name="Robots Activos"
+                                />
+                                <Line
+                                    yAxisId="right"
+                                    type="monotone"
+                                    dataKey="malezas"
+                                    stroke={theme.palette.success.main}
+                                    name="Malezas Detectadas"
+                                />
+                            </LineChart>
+                        </ResponsiveContainer>
                     </CardContent>
                 </Card>
             </Box>
-
-            {/* Gestión de Robots */}
-            <Box sx={{ mt: 3 }}>
-                <Card>
-                    <CardContent>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                            <Typography variant="h6">
-                                Gestión de Robots
-                            </Typography>
-                            <Button
-                                variant="contained"
-                                startIcon={<AddIcon />}
-                                onClick={() => setOpenRobotDialog(true)}
-                            >
-                                Agregar Robot
-                            </Button>
-                        </Box>
-                        <TableContainer>
-                            <Table>
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell>ID</TableCell>
-                                        <TableCell>Nombre</TableCell>
-                                        <TableCell>Estado</TableCell>
-                                        <TableCell>Batería</TableCell>
-                                        <TableCell>Última Actividad</TableCell>
-                                        <TableCell>Acciones</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {robots.map((robot) => (
-                                        <TableRow key={robot.id}>
-                                            <TableCell>{robot.id}</TableCell>
-                                            <TableCell>{robot.nombre}</TableCell>
-                                            <TableCell>
-                                                <Box
-                                                    sx={{
-                                                        display: 'inline-flex',
-                                                        alignItems: 'center',
-                                                        px: 1,
-                                                        py: 0.5,
-                                                        borderRadius: 1,
-                                                        bgcolor: 
-                                                            robot.estado === 'Disponible' ? 'success.light' :
-                                                            robot.estado === 'En Operación' ? 'info.light' :
-                                                            'warning.light',
-                                                        color: 
-                                                            robot.estado === 'Disponible' ? 'success.dark' :
-                                                            robot.estado === 'En Operación' ? 'info.dark' :
-                                                            'warning.dark',
-                                                    }}
-                                                >
-                                                    {robot.estado}
-                                                </Box>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                    <LinearProgress
-                                                        variant="determinate"
-                                                        value={robot.bateria}
-                                                        sx={{
-                                                            width: 100,
-                                                            mr: 1,
-                                                            height: 8,
-                                                            borderRadius: 4,
-                                                        }}
-                                                    />
-                                                    {robot.bateria}%
-                                                </Box>
-                                            </TableCell>
-                                            <TableCell>
-                                                {new Date(robot.ultima_actividad).toLocaleString()}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Button
-                                                    color="error"
-                                                    size="small"
-                                                    onClick={() => handleDeleteRobot(robot.id)}
-                                                >
-                                                    Eliminar
-                                                </Button>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-                    </CardContent>
-                </Card>
-            </Box>
-
-            {/* Dialog para agregar robot */}
-            <Dialog open={openRobotDialog} onClose={() => setOpenRobotDialog(false)}>
-                <DialogTitle>Agregar Nuevo Robot</DialogTitle>
-                <DialogContent>
-                    <Box sx={{ pt: 2 }}>
-                        <TextField
-                            autoFocus
-                            margin="dense"
-                            label="Nombre del Robot"
-                            fullWidth
-                            value={newRobot.nombre}
-                            onChange={(e) => setNewRobot({ ...newRobot, nombre: e.target.value })}
-                        />
-                        <FormControl fullWidth sx={{ mt: 2 }}>
-                            <InputLabel>Estado</InputLabel>
-                            <Select
-                                value={newRobot.estado}
-                                label="Estado"
-                                onChange={(e) => setNewRobot({ ...newRobot, estado: e.target.value })}
-                            >
-                                <MenuItem value="Disponible">Disponible</MenuItem>
-                                <MenuItem value="En Mantenimiento">En Mantenimiento</MenuItem>
-                                <MenuItem value="En Operación">En Operación</MenuItem>
-                            </Select>
-                        </FormControl>
-                    </Box>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setOpenRobotDialog(false)}>Cancelar</Button>
-                    <Button onClick={handleAddRobot} variant="contained">
-                        Agregar
-                    </Button>
-                </DialogActions>
-            </Dialog>
         </Box>
     );
 };

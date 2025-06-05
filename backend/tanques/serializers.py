@@ -4,4 +4,6 @@ from .models import Tanque
 class TanqueSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tanque
-        fields = '__all__'      
+        fields = ['id_tanque', 'nombre', 'capacidad', 'nivel_actual', 
+                 'estado', 'ultima_recarga', 'activo']
+        read_only_fields = ['id_tanque']      

@@ -1,10 +1,12 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
-from rest_framework import generics, status
+from rest_framework import generics, status, viewsets
+from rest_framework.decorators import action
 from django.db.models import Q
 from rest_framework.exceptions import NotFound, ValidationError
 from .models import Maleza, MalezaDetectada
 from .serializers import MalezaSerializer, MalezaDetectadaSerializer
+from rest_framework.permissions import IsAuthenticated
 
 
 class MalezaList(generics.ListCreateAPIView):
@@ -78,4 +80,45 @@ class EliminarMalezaDetectada(generics.DestroyAPIView):
     queryset = MalezaDetectada.objects.all()
     serializer_class = MalezaDetectadaSerializer
     lookup_field = 'id'
+
+class MalezaViewSet(viewsets.ModelViewSet):
+    queryset = Maleza.objects.filter(activo=True)
+    serializer_class = MalezaSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_destroy(self, instance):
+        instance.activo = False
+        instance.save()
+
+    @action(detail=False, methods=['get'])
+    def buscar(self, request):
+        query = request.query_params.get('q', '')
+        if not query:
+            return Response(
+                {'error': 'Se requiere un término de búsqueda'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        malezas = self.queryset.filter(
+            Q(nombre__icontains=query) |
+            Q(nombre_cientifico__icontains=query) |
+            Q(tipo__icontains=query) |
+            Q(descripcion__icontains=query)
+        )
+        
+        serializer = self.get_serializer(malezas, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def por_tipo(self, request):
+        tipo = request.query_params.get('tipo', '')
+        if not tipo:
+            return Response(
+                {'error': 'Se requiere especificar un tipo'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        malezas = self.queryset.filter(tipo=tipo)
+        serializer = self.get_serializer(malezas, many=True)
+        return Response(serializer.data)
 

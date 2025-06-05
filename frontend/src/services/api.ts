@@ -2,6 +2,13 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:8000/api';
 
+// Interfaces
+interface CreateRobotData {
+  nombre: string;
+  estado: string;
+  bateria: number;
+}
+
 const api = axios.create({
   baseURL: API_URL,
   headers: {
@@ -35,8 +42,8 @@ export const authService = {
 export const robotsService = {
   getAll: () => api.get('/robots/'),
   getById: (id: number) => api.get(`/robots/${id}/`),
-  create: (data: any) => api.post('/robots/', data),
-  update: (id: number, data: any) => api.put(`/robots/${id}/`, data),
+  create: (data: CreateRobotData) => api.post('/robots/', data),
+  update: (id: number, data: Partial<CreateRobotData>) => api.put(`/robots/${id}/`, data),
   delete: (id: number) => api.delete(`/robots/${id}/`),
 };
 

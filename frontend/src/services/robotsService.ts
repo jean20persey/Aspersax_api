@@ -1,39 +1,43 @@
-import axios from 'axios';
-
-const API_URL = 'http://localhost:8000/api';  // Ajusta esto según tu configuración
+import api from './api';
 
 interface Robot {
-    id: string;
+    id_robot: number;
     nombre: string;
     estado: string;
     bateria: number;
     ultima_actividad: string;
+    activo: boolean;
 }
 
 interface CreateRobotData {
     nombre: string;
     estado: string;
+    bateria: number;
 }
 
 const robotsService = {
     getAll: () => {
-        return axios.get<Robot[]>(`${API_URL}/robots/`);
+        return api.get<Robot[]>('/robots/');
     },
 
-    getById: (id: string) => {
-        return axios.get<Robot>(`${API_URL}/robots/${id}/`);
+    getById: (id: number) => {
+        return api.get<Robot>(`/robots/${id}/`);
     },
 
     create: (data: CreateRobotData) => {
-        return axios.post<Robot>(`${API_URL}/robots/`, data);
+        const robotData = {
+            ...data,
+            bateria: Number(data.bateria)
+        };
+        return api.post<Robot>('/robots/crear/', robotData);
     },
 
-    update: (id: string, data: Partial<CreateRobotData>) => {
-        return axios.patch<Robot>(`${API_URL}/robots/${id}/`, data);
+    update: (id: number, data: Partial<CreateRobotData>) => {
+        return api.patch<Robot>(`/robots/${id}/actualizar/`, data);
     },
 
-    delete: (id: string) => {
-        return axios.delete(`${API_URL}/robots/${id}/`);
+    delete: (id: number) => {
+        return api.delete(`/robots/${id}/eliminar/`);
     }
 };
 
