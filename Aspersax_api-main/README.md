@@ -159,8 +159,3 @@ Para más detalles sobre los parámetros y respuestas, consulta la documentació
 - Backend: Django, Django REST Framework, SQLite
 - Frontend: React, TypeScript, Material UI, Vite
 
-## Contribución
-1. Haz un fork del repositorio.
-2. Crea una rama para tu funcionalidad: `git checkout -b feature/nueva-funcionalidad`
-3. Realiza tus cambios y haz commit.
-4. Envía un pull request.
