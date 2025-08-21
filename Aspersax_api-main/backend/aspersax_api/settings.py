@@ -23,10 +23,19 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
+<<<<<<< HEAD
+=======
+    'authentication',
+    'jornadas',
+>>>>>>> 30311b5 (Primer commit: API Aspersax)
     'robots',
     'tanques',
     'malezas',
     'reportes',
+<<<<<<< HEAD
+=======
+    'dashboard',
+>>>>>>> 30311b5 (Primer commit: API Aspersax)
     'stats.apps.StatsConfig',
 ]
 
@@ -113,4 +122,11 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 # Default primary key field type
+<<<<<<< HEAD
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField' 
+=======
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Configuración del modelo de usuario personalizado
+AUTH_USER_MODEL = 'authentication.Usuariopropio' 
+>>>>>>> 30311b5 (Primer commit: API Aspersax)

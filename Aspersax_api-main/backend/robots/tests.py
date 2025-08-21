@@ -18,8 +18,14 @@ class RobotTests(APITestCase):
         
         # Crear un robot de prueba
         self.robot = Robot.objects.create(
+<<<<<<< HEAD
             modelo='Modelo Test',
             estado='Activo',
+=======
+            nombre='Robot Test',
+            estado='Disponible',
+            bateria=100,
+>>>>>>> 30311b5 (Primer commit: API Aspersax)
             activo=True
         )
         
@@ -30,14 +36,24 @@ class RobotTests(APITestCase):
         """Prueba la creación de un nuevo robot"""
         url = reverse('crear-robot')
         data = {
+<<<<<<< HEAD
             'modelo': 'Modelo Nuevo',
             'estado': 'Inactivo',
+=======
+            'nombre': 'Robot Nuevo',
+            'estado': 'En Mantenimiento',
+            'bateria': 75,
+>>>>>>> 30311b5 (Primer commit: API Aspersax)
             'activo': True
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Robot.objects.count(), 2)
+<<<<<<< HEAD
         self.assertEqual(Robot.objects.get(modelo='Modelo Nuevo').estado, 'Inactivo')
+=======
+        self.assertEqual(Robot.objects.get(nombre='Robot Nuevo').estado, 'En Mantenimiento')
+>>>>>>> 30311b5 (Primer commit: API Aspersax)
 
     def test_listar_robots(self):
         """Prueba obtener la lista de robots"""
@@ -51,19 +67,33 @@ class RobotTests(APITestCase):
         url = reverse('robot-detail', args=[self.robot.id_robot])
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+<<<<<<< HEAD
         self.assertEqual(response.data['modelo'], 'Modelo Test')
+=======
+        self.assertEqual(response.data['nombre'], 'Robot Test')
+>>>>>>> 30311b5 (Primer commit: API Aspersax)
 
     def test_actualizar_robot(self):
         """Prueba actualizar un robot existente"""
         url = reverse('actualizar-robot', args=[self.robot.id_robot])
         data = {
+<<<<<<< HEAD
             'modelo': 'Modelo Actualizado',
             'estado': 'Mantenimiento',
+=======
+            'nombre': 'Robot Actualizado',
+            'estado': 'En Operación',
+            'bateria': 50,
+>>>>>>> 30311b5 (Primer commit: API Aspersax)
             'activo': False
         }
         response = self.client.put(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+<<<<<<< HEAD
         self.assertEqual(Robot.objects.get(id_robot=self.robot.id_robot).modelo, 'Modelo Actualizado')
+=======
+        self.assertEqual(Robot.objects.get(id_robot=self.robot.id_robot).nombre, 'Robot Actualizado')
+>>>>>>> 30311b5 (Primer commit: API Aspersax)
 
     def test_eliminar_robot(self):
         """Prueba eliminar un robot"""
@@ -76,6 +106,7 @@ class RobotTests(APITestCase):
         """Prueba filtrar robots por estado"""
         # Crear un robot adicional con estado diferente
         Robot.objects.create(
+<<<<<<< HEAD
             modelo='Robot Inactivo',
             estado='Inactivo',
             activo=False
@@ -86,3 +117,16 @@ class RobotTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['modelo'], 'Modelo Test')
+=======
+            nombre='Robot Inactivo',
+            estado='Fuera de Servicio',
+            bateria=0,
+            activo=False
+        )
+        
+        url = reverse('robots-por-estado', args=['Disponible'])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['nombre'], 'Robot Test')
+>>>>>>> 30311b5 (Primer commit: API Aspersax)

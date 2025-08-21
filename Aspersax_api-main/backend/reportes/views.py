@@ -85,7 +85,11 @@ class ReporteViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
+<<<<<<< HEAD
         reportes = self.queryset.filter(fecha__gte=fecha_inicio)
+=======
+        reportes = self.queryset.filter(jornada__fecha__gte=fecha_inicio)
+>>>>>>> 30311b5 (Primer commit: API Aspersax)
         serializer = self.get_serializer(reportes, many=True)
         return Response(serializer.data)
 

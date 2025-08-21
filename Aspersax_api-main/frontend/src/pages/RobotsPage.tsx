@@ -73,6 +73,7 @@ const RobotsPage = () => {
     }
   };
 
+<<<<<<< HEAD
   const handleDeleteRobot = async (id_robot: number) => {
     try {
       await robotsService.delete(id_robot);
@@ -92,6 +93,8 @@ const RobotsPage = () => {
     }
   };
 
+=======
+>>>>>>> 30311b5 (Primer commit: API Aspersax)
   return (
     <div>
       <PageHeader title="Robots" />
@@ -117,7 +120,10 @@ const RobotsPage = () => {
               <TableCell>Estado</TableCell>
               <TableCell>Batería</TableCell>
               <TableCell>Última Actividad</TableCell>
+<<<<<<< HEAD
               <TableCell>Acciones</TableCell>
+=======
+>>>>>>> 30311b5 (Primer commit: API Aspersax)
             </TableRow>
           </TableHead>
           <TableBody>
@@ -128,6 +134,7 @@ const RobotsPage = () => {
                 <TableCell>{robot.estado}</TableCell>
                 <TableCell>{robot.bateria}%</TableCell>
                 <TableCell>{new Date(robot.ultima_actividad).toLocaleString()}</TableCell>
+<<<<<<< HEAD
                 <TableCell>
                   <Button color="primary" size="small">
                     Editar
@@ -140,6 +147,8 @@ const RobotsPage = () => {
                     Eliminar
                   </Button>
                 </TableCell>
+=======
+>>>>>>> 30311b5 (Primer commit: API Aspersax)
               </TableRow>
             ))}
           </TableBody>

@@ -25,4 +25,8 @@ urlpatterns = [
     path('api/jornadas/', include('jornadas.urls')),
     path('api/malezas/', include('malezas.urls')),
     path('api/reportes/', include('reportes.urls')),
+<<<<<<< HEAD
+=======
+    path('api/dashboard/', include('dashboard.urls')),
+>>>>>>> 30311b5 (Primer commit: API Aspersax)
 ]

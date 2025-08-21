@@ -36,6 +36,7 @@ class JornadaPorFecha(generics.ListAPIView):
 class JornadaUpdateView(generics.UpdateAPIView):
     queryset = Jornada.objects.all()
     serializer_class = JornadaSerializer
+<<<<<<< HEAD
     lookup_field = 'id_jornada'
 
 
@@ -43,4 +44,25 @@ class JornadaDeleteView(generics.DestroyAPIView):
     queryset = Jornada.objects.all()    
     serializer_class = JornadaSerializer
     lookup_field = 'id_jornada'
+=======
+    
+    def get_object(self):
+        id_jornada = self.kwargs.get('id_jornada')
+        try:
+            return Jornada.objects.get(id_jornada=id_jornada)
+        except Jornada.DoesNotExist:
+            raise NotFound("Jornada no encontrada")
+
+
+class JornadaDeleteView(generics.DestroyAPIView):
+    queryset = Jornada.objects.all()
+    serializer_class = JornadaSerializer
+    
+    def get_object(self):
+        id_jornada = self.kwargs.get('id_jornada')
+        try:
+            return Jornada.objects.get(id_jornada=id_jornada)
+        except Jornada.DoesNotExist:
+            raise NotFound("Jornada no encontrada")
+>>>>>>> 30311b5 (Primer commit: API Aspersax)
     

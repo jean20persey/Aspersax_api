@@ -33,6 +33,7 @@ api.interceptors.request.use(
 // Servicios de autenticación
 export const authService = {
   login: (credentials: { username: string; password: string }) =>
+<<<<<<< HEAD
     api.post('/auth/token/', credentials),
   register: (userData: any) =>
     api.post('/auth/registro/', userData),
@@ -40,6 +41,11 @@ export const authService = {
     api.post('/auth/token/refresh/', { refresh }),
   getProfile: () => api.get('/auth/perfil/'),
   updateProfile: (data: any) => api.put('/auth/perfil/', data),
+=======
+    api.post('/token/', credentials),
+  refreshToken: (refresh: string) =>
+    api.post('/token/refresh/', { refresh }),
+>>>>>>> 30311b5 (Primer commit: API Aspersax)
 };
 
 // Servicios de robots
@@ -64,9 +70,15 @@ export const tanquesService = {
 export const jornadasService = {
   getAll: () => api.get('/jornadas/'),
   getById: (id: number) => api.get(`/jornadas/${id}/`),
+<<<<<<< HEAD
   create: (data: any) => api.post('/jornadas/', data),
   update: (id: number, data: any) => api.put(`/jornadas/${id}/`, data),
   delete: (id: number) => api.delete(`/jornadas/${id}/`),
+=======
+  create: (data: any) => api.post('/jornadas/crear/', data),
+  update: (id: number, data: any) => api.put(`/jornadas/${id}/actualizar/`, data),
+  delete: (id: number) => api.delete(`/jornadas/${id}/eliminar/`),
+>>>>>>> 30311b5 (Primer commit: API Aspersax)
 };
 
 // Servicios de malezas
@@ -78,4 +90,16 @@ export const malezasService = {
   delete: (id: number) => api.delete(`/malezas/${id}/`),
 };
 
+<<<<<<< HEAD
+=======
+// Servicios de reportes
+export const reportesService = {
+  getAll: () => api.get('/reportes/'),
+  getById: (id: number) => api.get(`/reportes/${id}/`),
+  create: (data: any) => api.post('/reportes/', data),
+  update: (id: number, data: any) => api.put(`/reportes/${id}/`, data),
+  delete: (id: number) => api.delete(`/reportes/${id}/`),
+};
+
+>>>>>>> 30311b5 (Primer commit: API Aspersax)
 export default api; 

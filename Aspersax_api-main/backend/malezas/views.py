@@ -28,7 +28,11 @@ class MalezaByNombre(generics.ListAPIView):
     def get_queryset(self):
         nombre = self.kwargs.get('nombre', None)
         if nombre:
+<<<<<<< HEAD
             return Maleza.objects.filter(nombre_comun__icontains=nombre)
+=======
+            return Maleza.objects.filter(nombre__icontains=nombre)
+>>>>>>> 30311b5 (Primer commit: API Aspersax)
         raise NotFound("Debe proporcionar un nombre válido")
 
 class MalezaDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -84,7 +88,11 @@ class EliminarMalezaDetectada(generics.DestroyAPIView):
 class MalezaViewSet(viewsets.ModelViewSet):
     queryset = Maleza.objects.filter(activo=True)
     serializer_class = MalezaSerializer
+<<<<<<< HEAD
     permission_classes = [IsAuthenticated]
+=======
+    # permission_classes = [IsAuthenticated]  # Temporarily removed for testing
+>>>>>>> 30311b5 (Primer commit: API Aspersax)
 
     def perform_destroy(self, instance):
         instance.activo = False

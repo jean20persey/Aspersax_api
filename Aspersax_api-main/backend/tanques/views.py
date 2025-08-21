@@ -22,6 +22,7 @@ class ActualizarTanque(generics.UpdateAPIView):
     serializer_class = TanqueSerializer
     lookup_field = 'id_tanque'
 
+<<<<<<< HEAD
 class TanqueByTipo(generics.ListAPIView):
     serializer_class = TanqueSerializer
     
@@ -30,6 +31,16 @@ class TanqueByTipo(generics.ListAPIView):
         if tipo:
             return Tanque.objects.filter(tipo=tipo)
         raise NotFound("Debe proporcionar un tipo válido")
+=======
+class TanqueByEstado(generics.ListAPIView):
+    serializer_class = TanqueSerializer
+    
+    def get_queryset(self):
+        estado = self.kwargs.get('estado', None)
+        if estado:
+            return Tanque.objects.filter(estado=estado)
+        raise NotFound("Debe proporcionar un estado válido")
+>>>>>>> 30311b5 (Primer commit: API Aspersax)
 
 class TanqueDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Tanque.objects.all()
@@ -44,7 +55,11 @@ class EliminarTanque(generics.DestroyAPIView):
 class TanqueViewSet(viewsets.ModelViewSet):
     queryset = Tanque.objects.filter(activo=True)
     serializer_class = TanqueSerializer
+<<<<<<< HEAD
     permission_classes = [IsAuthenticated]
+=======
+    # permission_classes = [IsAuthenticated]  # Temporarily removed for testing
+>>>>>>> 30311b5 (Primer commit: API Aspersax)
 
     def perform_destroy(self, instance):
         instance.activo = False

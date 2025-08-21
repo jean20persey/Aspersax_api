@@ -6,7 +6,11 @@ import sys
 
 def main():
     """Run administrative tasks."""
+<<<<<<< HEAD
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'aspersax.settings')
+=======
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'aspersax_api.settings')
+>>>>>>> 30311b5 (Primer commit: API Aspersax)
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
