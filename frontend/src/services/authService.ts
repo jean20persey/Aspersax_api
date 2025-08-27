@@ -66,109 +66,37 @@ class AuthService {
     async enviarCodigoRecuperacion(email: string): Promise<any> {
         try {
             console.log('Enviando código de recuperación a:', email);
-            
-            // Simular verificación de email existente
-            const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
-            const usuarioExiste = usuarios.find((u: any) => u.email === email);
-            
-            if (!usuarioExiste) {
-                throw new Error('Email no registrado en el sistema');
-            }
-
-            // Generar código de 6 dígitos
-            const codigo = Math.floor(100000 + Math.random() * 900000).toString();
-            
-            // Guardar código temporalmente (en producción sería en el backend)
-            const codigoData = {
-                email,
-                codigo,
-                timestamp: Date.now(),
-                usado: false
-            };
-            
-            localStorage.setItem('codigoRecuperacion', JSON.stringify(codigoData));
-            
-            // Simular envío de email (en producción se enviaría realmente)
-            console.log(`Código enviado por email: ${codigo}`);
-            alert(`SIMULACIÓN: Código enviado por email: ${codigo}`); // Solo para desarrollo
-            
-            return { message: 'Código enviado exitosamente' };
+            const response = await axios.post(`${API_URL}/enviar-codigo-recuperacion/`, { email });
+            return response.data;
         } catch (error: any) {
-            console.error('Error al enviar código:', error);
-            throw { detail: error.message || 'Error al enviar código de recuperación' };
+            console.error('Error al enviar código:', error.response?.data || error);
+            throw error.response?.data || error;
         }
     }
 
     async verificarCodigoRecuperacion(email: string, codigo: string): Promise<any> {
         try {
             console.log('Verificando código para:', email);
-            
-            const codigoData = JSON.parse(localStorage.getItem('codigoRecuperacion') || '{}');
-            
-            if (!codigoData.email || codigoData.email !== email) {
-                throw new Error('No hay código pendiente para este email');
-            }
-
-            if (codigoData.usado) {
-                throw new Error('Este código ya ha sido utilizado');
-            }
-
-            // Verificar que el código no haya expirado (10 minutos)
-            const tiempoExpiracion = 10 * 60 * 1000; // 10 minutos
-            if (Date.now() - codigoData.timestamp > tiempoExpiracion) {
-                localStorage.removeItem('codigoRecuperacion');
-                throw new Error('El código ha expirado. Solicita uno nuevo');
-            }
-
-            if (codigoData.codigo !== codigo) {
-                throw new Error('Código incorrecto');
-            }
-
-            return { message: 'Código verificado correctamente' };
+            const response = await axios.post(`${API_URL}/verificar-codigo-recuperacion/`, { email, codigo });
+            return response.data;
         } catch (error: any) {
-            console.error('Error al verificar código:', error);
-            throw { detail: error.message || 'Error al verificar código' };
+            console.error('Error al verificar código:', error.response?.data || error);
+            throw error.response?.data || error;
         }
     }
 
     async cambiarPasswordConCodigo(email: string, codigo: string, nuevaPassword: string): Promise<any> {
         try {
             console.log('Cambiando contraseña para:', email);
-            
-            const codigoData = JSON.parse(localStorage.getItem('codigoRecuperacion') || '{}');
-            
-            if (!codigoData.email || codigoData.email !== email || codigoData.codigo !== codigo) {
-                throw new Error('Código inválido o expirado');
-            }
-
-            if (codigoData.usado) {
-                throw new Error('Este código ya ha sido utilizado');
-            }
-
-            // Actualizar contraseña del usuario
-            const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
-            const usuarioIndex = usuarios.findIndex((u: any) => u.email === email);
-            
-            if (usuarioIndex === -1) {
-                throw new Error('Usuario no encontrado');
-            }
-
-            usuarios[usuarioIndex].password = nuevaPassword;
-            localStorage.setItem('usuarios', JSON.stringify(usuarios));
-            
-            // Marcar código como usado
-            codigoData.usado = true;
-            localStorage.setItem('codigoRecuperacion', JSON.stringify(codigoData));
-            
-            // Limpiar código después de un tiempo
-            setTimeout(() => {
-                localStorage.removeItem('codigoRecuperacion');
-            }, 5000);
-
-            return { message: 'Contraseña cambiada exitosamente' };
+            const response = await axios.post(`${API_URL}/cambiar-password-codigo/`, { 
+                email, 
+                codigo, 
+                nueva_password: nuevaPassword 
+            });
+            return response.data;
         } catch (error: any) {
-            console.error('Error al cambiar contraseña:', error);
-            throw { detail: error.message || 'Error al cambiar contraseña' };
+            console.error('Error al cambiar contraseña:', error.response?.data || error);
+            throw error.response?.data || error;
         }
     }
 }

@@ -11,4 +11,7 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('registro/', views.RegistroUsuarioView.as_view(), name='registro'),
     path('perfil/', views.PerfilUsuarioView.as_view(), name='perfil'),
-] 
+    path('enviar-codigo-recuperacion/', views.enviar_codigo_recuperacion, name='enviar_codigo_recuperacion'),
+    path('verificar-codigo-recuperacion/', views.verificar_codigo_recuperacion, name='verificar_codigo_recuperacion'),
+    path('cambiar-password-codigo/', views.cambiar_password_con_codigo, name='cambiar_password_codigo'),
+]

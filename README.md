@@ -285,29 +285,3 @@ npm start        # Ejecutar backend
 5. Abre un **Pull Request**
 
 ---
-
-## 📄 Licencia
-
-Este proyecto está bajo la Licencia MIT. Ver el archivo [LICENSE](LICENSE) para más detalles.
-
----
-
-## 👥 Equipo de Desarrollo
-
-**Aspersax Team** - *Desarrollo inicial*
-
----
-
-## 📞 Soporte
-
-¿Tienes preguntas o necesitas ayuda?
-
-- 📧 **Email:** aspersaxapi@gmail.com
-- 🐛 **Issues:** [GitHub Issues](https://github.com/jean20persey/Aspersax_api/issues)
-- 📖 **Wiki:** [Documentación completa](https://github.com/jean20persey/Aspersax_api/wiki)
-
----
-
-
-
-
