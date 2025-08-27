@@ -127,8 +127,8 @@ function App() {
           <Route path="/registro" element={<RegisterPage />} />
           <Route path="/recuperar-password" element={<RecuperarPasswordPage />} />
           
-          {/* Ruta raíz redirige a /dashboard */}
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          {/* Ruta raíz redirige a /login */}
+          <Route path="/" element={<Navigate to="/login" replace />} />
 
           {/* Rutas protegidas */}
           <Route
