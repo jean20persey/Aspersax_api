@@ -87,15 +87,41 @@ class AuthService {
 
     async cambiarPasswordConCodigo(email: string, codigo: string, nuevaPassword: string): Promise<any> {
         try {
-            console.log('Cambiando contraseña para:', email);
-            const response = await axios.post(`${API_URL}/cambiar-password-codigo/`, { 
-                email, 
-                codigo, 
-                nueva_password: nuevaPassword 
+            console.log('Cambiando contraseña con código');
+            const response = await axios.post(`${API_URL}/cambiar-password-con-codigo/`, {
+                email,
+                codigo,
+                nueva_password: nuevaPassword
             });
             return response.data;
         } catch (error: any) {
             console.error('Error al cambiar contraseña:', error.response?.data || error);
+            throw error.response?.data || error;
+        }
+    }
+
+    async solicitarPermisosAdmin(motivo: string): Promise<any> {
+        try {
+            console.log('Solicitando permisos de administrador');
+            const response = await axios.post(`${API_URL}/solicitar-admin/`, {
+                motivo
+            });
+            return response.data;
+        } catch (error: any) {
+            console.error('Error al solicitar permisos:', error.response?.data || error);
+            throw error.response?.data || error;
+        }
+    }
+
+    async verificarCodigoAdmin(codigo: string): Promise<any> {
+        try {
+            console.log('Verificando código de administrador');
+            const response = await axios.post(`${API_URL}/verificar-admin/`, {
+                codigo
+            });
+            return response.data;
+        } catch (error: any) {
+            console.error('Error al verificar código:', error.response?.data || error);
             throw error.response?.data || error;
         }
     }

@@ -15,13 +15,23 @@ import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import GrassIcon from '@mui/icons-material/Grass';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import LogoutIcon from '@mui/icons-material/Logout';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import authService from '../services/authService';
+import { useState, useEffect } from 'react';
 
 const drawerWidth = 240;
 
 const Navigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [userRole, setUserRole] = useState<string>('viewer');
+
+  useEffect(() => {
+    const user = authService.getCurrentUser();
+    if (user && user.rol) {
+      setUserRole(user.rol);
+    }
+  }, []);
 
   const handleLogout = () => {
     authService.logout();
@@ -185,6 +195,53 @@ const Navigation = () => {
         borderTop: '1px solid rgba(255, 255, 255, 0.1)',
         background: 'rgba(0, 0, 0, 0.1)'
       }}>
+        {/* Botón para solicitar permisos de administrador - solo para usuarios viewer */}
+        {userRole === 'viewer' && (
+          <ListItemButton
+            onClick={() => navigate('/solicitar-admin')}
+            sx={{
+              color: 'white',
+              mb: 1,
+              '&:hover': {
+                background: 'linear-gradient(90deg, rgba(255,193,7,0.2) 0%, rgba(255,193,7,0.1) 100%)',
+                transform: 'translateX(2px)',
+                '& .MuiListItemIcon-root': {
+                  transform: 'scale(1.1)',
+                  color: '#ffc107'
+                }
+              },
+              borderRadius: '12px',
+              py: 1.5,
+              px: 2,
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              border: '1px solid rgba(255, 193, 7, 0.3)'
+            }}
+          >
+            <ListItemIcon sx={{ 
+              color: '#ffc107', 
+              minWidth: 48,
+              transition: 'all 0.3s ease',
+              '& svg': {
+                fontSize: 22
+              }
+            }}>
+              <AdminPanelSettingsIcon />
+            </ListItemIcon>
+            <ListItemText 
+              primary="Ser Admin"
+              sx={{
+                '& .MuiListItemText-primary': {
+                  color: 'white',
+                  fontWeight: 500,
+                  fontSize: '15px',
+                  fontFamily: '"Inter", sans-serif',
+                  letterSpacing: '0.5px'
+                },
+              }}
+            />
+          </ListItemButton>
+        )}
+        
         <ListItemButton
           onClick={handleLogout}
           sx={{

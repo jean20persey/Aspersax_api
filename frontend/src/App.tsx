@@ -7,6 +7,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import RecuperarPasswordPage from './pages/RecuperarPasswordPage';
+import SolicitarAdminPage from './pages/SolicitarAdminPage';
 import DashboardPage from './pages/DashboardPage';
 import RobotsPage from './pages/RobotsPage';
 import TanquesPage from './pages/TanquesPage';
@@ -129,6 +130,18 @@ function App() {
           
           {/* Ruta raíz redirige a /login */}
           <Route path="/" element={<Navigate to="/login" replace />} />
+          
+          {/* Ruta para solicitar permisos de administrador */}
+          <Route 
+            path="/solicitar-admin" 
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <SolicitarAdminPage />
+                </Layout>
+              </ProtectedRoute>
+            } 
+          />
 
           {/* Rutas protegidas */}
           <Route

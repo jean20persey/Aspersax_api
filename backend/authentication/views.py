@@ -1,13 +1,15 @@
-from rest_framework import generics, permissions, status
+from django.contrib.auth import authenticate, get_user_model
+from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework_simplejwt.views import TokenObtainPairView
-from django.contrib.auth import get_user_model
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework import permissions
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
 from .serializers import RegistroUsuarioSerializer, UsuarioSerializer
-from .models import CodigoRecuperacion
+from .models import CodigoRecuperacion, SolicitudAdministrador
 
 User = get_user_model()
 
@@ -228,20 +230,122 @@ def cambiar_password_con_codigo(request):
         codigo_recuperacion.usado = True
         codigo_recuperacion.save()
         
+        return Response({'message': 'Contraseña cambiada exitosamente'})
+
+    except Exception as e:
+        return Response({'detail': f'Error al verificar código: {str(e)}'}, status=500)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def solicitar_permisos_administrador(request):
+    """Solicitar permisos de administrador - envía código a aspersaxapi@gmail.com"""
+    try:
+        usuario = request.user
+        motivo = request.data.get('motivo', '')
+        
+        # Verificar si ya es administrador
+        if usuario.es_administrador():
+            return Response({'detail': 'Ya tienes permisos de administrador'}, status=400)
+        
+        # Verificar si ya tiene una solicitud pendiente
+        solicitud_existente = SolicitudAdministrador.objects.filter(
+            usuario=usuario, 
+            verificado=False
+        ).first()
+        
+        if solicitud_existente and not solicitud_existente.is_expired():
+            return Response({
+                'detail': 'Ya tienes una solicitud pendiente',
+                'codigo_enviado': True
+            }, status=400)
+        
+        # Invalidar solicitudes anteriores
+        SolicitudAdministrador.objects.filter(usuario=usuario, verificado=False).delete()
+        
+        # Crear nueva solicitud
+        solicitud = SolicitudAdministrador.objects.create(
+            usuario=usuario,
+            motivo=motivo
+        )
+        
+        # Enviar email a aspersaxapi@gmail.com
+        asunto = f"🔐 Solicitud de Permisos de Administrador - {usuario.username}"
+        mensaje = f"""
+¡Nueva solicitud de permisos de administrador!
+
+👤 Usuario: {usuario.username}
+📧 Email: {usuario.email}
+📅 Fecha: {solicitud.fecha_solicitud.strftime('%d/%m/%Y %H:%M')}
+🔑 Código de verificación: {solicitud.codigo_verificacion}
+
+📝 Motivo de la solicitud:
+{motivo if motivo else 'No especificado'}
+
+---
+Para otorgar permisos de administrador:
+1. El usuario debe ingresar el código: {solicitud.codigo_verificacion}
+2. El código expira en 24 horas
+3. Una vez verificado, el usuario tendrá permisos de administrador
+
+Sistema Aspersax - Gestión de Aspersores Inteligentes 🌱
+        """
+        
+        send_mail(
+            asunto,
+            mensaje,
+            settings.EMAIL_HOST_USER,
+            ['aspersaxapi@gmail.com'],
+            fail_silently=False
+        )
+        
         return Response({
-            'message': 'Contraseña cambiada exitosamente'
+            'message': 'Solicitud enviada exitosamente. Revisa tu email para el código de verificación.',
+            'expira_en': '24 horas'
         })
         
-    except User.DoesNotExist:
-        return Response(
-            {'detail': 'Usuario no encontrado'}, 
-            status=status.HTTP_404_NOT_FOUND
-        )
-    except CodigoRecuperacion.DoesNotExist:
-        return Response(
-            {'detail': 'Código incorrecto o ya utilizado'}, 
-            status=status.HTTP_400_BAD_REQUEST
-        )
+    except Exception as e:
+        return Response({'detail': f'Error al procesar solicitud: {str(e)}'}, status=500)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def verificar_codigo_administrador(request):
+    """Verificar código y otorgar permisos de administrador"""
+    try:
+        usuario = request.user
+        codigo = request.data.get('codigo')
+        
+        if not codigo:
+            return Response({'detail': 'Código requerido'}, status=400)
+        
+        # Buscar solicitud
+        try:
+            solicitud = SolicitudAdministrador.objects.get(
+                usuario=usuario,
+                codigo_verificacion=codigo.upper(),
+                verificado=False
+            )
+        except SolicitudAdministrador.DoesNotExist:
+            return Response({'detail': 'Código inválido'}, status=400)
+        
+        # Verificar expiración
+        if solicitud.is_expired():
+            return Response({'detail': 'El código ha expirado'}, status=400)
+        
+        # Otorgar permisos de administrador
+        usuario.rol = 'admin'
+        usuario.save()
+        
+        # Marcar solicitud como verificada
+        solicitud.verificado = True
+        solicitud.save()
+        
+        return Response({
+            'message': '¡Felicidades! Ahora tienes permisos de administrador',
+            'rol': 'admin'
+        })
+        
+    except Exception as e:
+        return Response({'detail': f'Error al verificar código: {str(e)}'}, status=500)
 
 class PerfilUsuarioView(generics.RetrieveUpdateAPIView):
     permission_classes = (permissions.IsAuthenticated,)
