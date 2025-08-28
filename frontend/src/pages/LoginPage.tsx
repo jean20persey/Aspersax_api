@@ -43,7 +43,9 @@ const LoginPage: React.FC = () => {
         } catch (err: any) {
             console.error('Error de login completo:', err);
             console.error('Error detail:', err.detail);
+            console.error('Error response:', err.response);
             const errorMessage = err.detail || err.message || 'Usuario o contraseña incorrectos';
+            console.log('Mensaje de error que se mostrará:', errorMessage);
             setError(errorMessage);
         } finally {
             setIsLoading(false);

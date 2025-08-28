@@ -28,8 +28,12 @@ instance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+      // Solo redirigir si no estamos en la página de login
+      const currentPath = window.location.pathname;
+      if (currentPath !== '/login' && currentPath !== '/registro' && currentPath !== '/recuperar-password') {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
