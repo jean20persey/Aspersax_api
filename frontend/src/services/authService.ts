@@ -36,7 +36,12 @@ class AuthService {
             throw new Error('Token no recibido');
         } catch (error: any) {
             console.error('Error en el login:', error.response?.data || error);
-            throw error.response?.data || error;
+            console.error('Error completo:', error);
+            // Asegurar que se propague el mensaje específico del backend
+            if (error.response?.data?.detail) {
+                throw { detail: error.response.data.detail };
+            }
+            throw error.response?.data || { detail: 'Error de conexión' };
         }
     }
 

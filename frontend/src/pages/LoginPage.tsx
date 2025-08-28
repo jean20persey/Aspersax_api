@@ -41,8 +41,10 @@ const LoginPage: React.FC = () => {
             await authService.login({ username, password });
             navigate('/dashboard');
         } catch (err: any) {
-            setError(err.detail || 'Usuario o contraseña incorrectos');
-            console.error('Error de login:', err);
+            console.error('Error de login completo:', err);
+            console.error('Error detail:', err.detail);
+            const errorMessage = err.detail || err.message || 'Usuario o contraseña incorrectos';
+            setError(errorMessage);
         } finally {
             setIsLoading(false);
         }
