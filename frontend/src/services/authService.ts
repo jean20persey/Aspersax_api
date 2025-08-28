@@ -19,7 +19,7 @@ class AuthService {
     async login(credentials: LoginCredentials): Promise<any> {
         try {
             console.log('Intentando login con credenciales:', credentials);
-            const response = await axios.post<LoginResponse>(`${API_URL}/token/`, credentials);
+            const response = await axios.post<LoginResponse>('/api/token/', credentials);
             console.log('Respuesta del login:', response.data);
             
             if (response.data.access) {  // JWT devuelve 'access' y 'refresh'

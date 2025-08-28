@@ -16,7 +16,7 @@ import {
   Divider
 } from '@mui/material';
 import { AdminPanelSettings, Email, VerifiedUser } from '@mui/icons-material';
-import { authService } from '../services/authService';
+import authService from '../services/authService';
 
 const SolicitarAdminPage: React.FC = () => {
   const [activeStep, setActiveStep] = useState(0);

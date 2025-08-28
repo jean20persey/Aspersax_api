@@ -157,46 +157,6 @@ npm install
 
 ---
 
-## 👥 Sistema de Roles y Permisos
-
-### 🔐 **Tipos de Usuario**
-
-#### **Administrador (`admin`)**
-- **Permisos completos:** Crear, editar, eliminar y visualizar todo el contenido
-- **Gestión de usuarios:** Acceso a funciones administrativas
-- **Reportes avanzados:** Generación y exportación de datos
-
-#### **Visualizador (`viewer`)**
-- **Solo lectura:** Visualizar dashboards y reportes
-- **Descarga de contenido:** Exportar reportes en PDF/Excel
-- **Sin permisos de modificación:** No puede crear ni editar datos
-
-### 🚀 **Registro de Nuevos Usuarios**
-
-#### **Proceso de Registro**
-1. **Registro inicial:** Todos los usuarios se registran como `viewer` por defecto
-2. **Email de bienvenida:** Se envía automáticamente tras el registro exitoso
-3. **Acceso inmediato:** Pueden visualizar y descargar contenido
-
-#### **Solicitud de Permisos de Administrador**
-1. **Botón "Ser Admin":** Visible en la navegación para usuarios `viewer`
-2. **Formulario de solicitud:** Especificar motivo para ser administrador
-3. **Código de verificación:** Se envía a `aspersaxapi@gmail.com`
-4. **Verificación:** Ingresar código de 8 caracteres (válido 24 horas)
-5. **Otorgamiento automático:** Permisos de administrador se asignan inmediatamente
-
-#### **Credenciales de Prueba**
-```bash
-# Usuario Administrador
-Usuario: admin
-Contraseña: admin123
-
-# Usuario Visualizador (para probar solicitud de permisos)
-Registrarse en: http://localhost:3001/registro
-```
-
----
-
 ## 🔧 Configuración
 
 ### 🌐 **Variables de Entorno**
@@ -262,19 +222,9 @@ npm start        # Ejecutar backend
 ## 📚 API Endpoints
 
 ### 🔐 **Autenticación**
-- `POST /api/token/` - Iniciar sesión (JWT)
-- `POST /api/token/refresh/` - Renovar token
-- `POST /api/auth/registro/` - Registrar usuario
-- `GET /api/auth/perfil/` - Obtener perfil de usuario
-
-### 👥 **Gestión de Roles**
-- `POST /api/auth/solicitar-admin/` - Solicitar permisos de administrador
-- `POST /api/auth/verificar-admin/` - Verificar código y otorgar permisos
-
-### 🔑 **Recuperación de Contraseña**
-- `POST /api/auth/enviar-codigo-recuperacion/` - Enviar código por email
-- `POST /api/auth/verificar-codigo-recuperacion/` - Verificar código
-- `POST /api/auth/cambiar-password-con-codigo/` - Cambiar contraseña
+- `POST /api/auth/login/` - Iniciar sesión
+- `POST /api/auth/register/` - Registrar usuario
+- `POST /api/auth/refresh/` - Renovar token
 
 ### 🤖 **Robots**
 - `GET /api/robots/` - Listar robots

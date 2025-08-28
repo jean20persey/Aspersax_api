@@ -196,6 +196,7 @@ const RegisterPage: React.FC = () => {
                                         value={formData.first_name}
                                         onChange={handleChange}
                                         autoFocus
+                                        autoComplete="off"
                                         InputProps={{
                                             startAdornment: (
                                                 <InputAdornment position="start">
@@ -221,6 +222,7 @@ const RegisterPage: React.FC = () => {
                                         name="last_name"
                                         value={formData.last_name}
                                         onChange={handleChange}
+                                        autoComplete="off"
                                         InputProps={{
                                             startAdornment: (
                                                 <InputAdornment position="start">
@@ -246,6 +248,7 @@ const RegisterPage: React.FC = () => {
                                         name="username"
                                         value={formData.username}
                                         onChange={handleChange}
+                                        autoComplete="off"
                                         InputProps={{
                                             startAdornment: (
                                                 <InputAdornment position="start">
@@ -272,6 +275,7 @@ const RegisterPage: React.FC = () => {
                                         type="email"
                                         value={formData.email}
                                         onChange={handleChange}
+                                        autoComplete="off"
                                         InputProps={{
                                             startAdornment: (
                                                 <InputAdornment position="start">
@@ -297,6 +301,7 @@ const RegisterPage: React.FC = () => {
                                         name="telefono"
                                         value={formData.telefono}
                                         onChange={handleChange}
+                                        autoComplete="off"
                                         InputProps={{
                                             startAdornment: (
                                                 <InputAdornment position="start">
@@ -322,6 +327,7 @@ const RegisterPage: React.FC = () => {
                                         name="direccion"
                                         value={formData.direccion}
                                         onChange={handleChange}
+                                        autoComplete="off"
                                         InputProps={{
                                             startAdornment: (
                                                 <InputAdornment position="start">
@@ -348,6 +354,7 @@ const RegisterPage: React.FC = () => {
                                         type={showPassword ? 'text' : 'password'}
                                         value={formData.password}
                                         onChange={handleChange}
+                                        autoComplete="new-password"
                                         InputProps={{
                                             startAdornment: (
                                                 <InputAdornment position="start">
@@ -385,6 +392,7 @@ const RegisterPage: React.FC = () => {
                                         type={showPassword2 ? 'text' : 'password'}
                                         value={formData.password2}
                                         onChange={handleChange}
+                                        autoComplete="new-password"
                                         InputProps={{
                                             startAdornment: (
                                                 <InputAdornment position="start">
