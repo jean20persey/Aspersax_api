@@ -12,6 +12,7 @@ class Usuariopropio(AbstractUser):
     
     # Campos adicionales para el usuario
     telefono = models.CharField(max_length=15, blank=True, null=True)
+    codigo_pais = models.CharField(max_length=5, default='CO', help_text='Código del país para el teléfono (ej: CO, US, MX)')
     direccion = models.TextField(blank=True, null=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     rol = models.CharField(max_length=10, choices=ROLES, default='viewer')

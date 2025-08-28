@@ -192,6 +192,17 @@ class AuthService {
         }
     }
 
+    // Actualizar perfil propio
+    async actualizarPerfil(userData: any): Promise<any> {
+        try {
+            const response = await axios.put(`${API_URL}/perfil/`, userData);
+            return response.data;
+        } catch (error: any) {
+            console.error('Error al actualizar perfil:', error.response?.data || error);
+            throw error.response?.data || error;
+        }
+    }
+
     // Verificar si el usuario actual es administrador
     async esAdministrador(): Promise<boolean> {
         try {

@@ -10,7 +10,7 @@ class RegistroUsuarioSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'password', 'password2', 'email', 'first_name', 'last_name', 'telefono', 'direccion')
+        fields = ('username', 'password', 'password2', 'email', 'first_name', 'last_name', 'telefono', 'codigo_pais', 'direccion')
 
     def validate(self, attrs):
         print(f"Validando datos en serializer: {attrs}")
@@ -26,5 +26,12 @@ class RegistroUsuarioSerializer(serializers.ModelSerializer):
 class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'telefono', 'direccion', 'rol', 'is_superuser', 'fecha_creacion', 'is_active')
+        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'telefono', 'codigo_pais', 'direccion', 'rol', 'is_superuser', 'fecha_creacion', 'is_active')
         read_only_fields = ('id', 'fecha_creacion')
+
+class PerfilUsuarioSerializer(serializers.ModelSerializer):
+    """Serializer específico para edición de perfil propio"""
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'telefono', 'codigo_pais', 'direccion', 'rol', 'is_superuser', 'fecha_creacion', 'is_active')
+        read_only_fields = ('id', 'username', 'rol', 'is_superuser', 'fecha_creacion', 'is_active')

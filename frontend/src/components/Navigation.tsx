@@ -261,21 +261,31 @@ const Navigation = () => {
           alignItems: 'center',
           gap: 1
         }}>
-          {/* Info del usuario expandida */}
+          {/* Info del usuario expandida - clickeable para ir al perfil */}
           {perfilUsuario && (
-            <Box sx={{ 
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1,
-              flex: 1,
-              minWidth: 0,
-              p: 1,
-              borderRadius: 2,
-              background: userRole?.isAdmin 
-                ? 'rgba(255, 193, 7, 0.12)'
-                : 'rgba(33, 150, 243, 0.12)',
-              border: `1px solid ${userRole?.isAdmin ? 'rgba(255, 193, 7, 0.2)' : 'rgba(33, 150, 243, 0.2)'}`,
-            }}>
+            <Box 
+              onClick={() => navigate('/perfil')}
+              sx={{ 
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                flex: 1,
+                minWidth: 0,
+                p: 1,
+                borderRadius: 2,
+                background: userRole?.isAdmin 
+                  ? 'rgba(255, 193, 7, 0.12)'
+                  : 'rgba(33, 150, 243, 0.12)',
+                border: `1px solid ${userRole?.isAdmin ? 'rgba(255, 193, 7, 0.2)' : 'rgba(33, 150, 243, 0.2)'}`,
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  background: userRole?.isAdmin 
+                    ? 'rgba(255, 193, 7, 0.2)'
+                    : 'rgba(33, 150, 243, 0.2)',
+                  transform: 'scale(1.02)',
+                }
+              }}>
               {userRole?.isAdmin ? (
                 <AdminPanelSettingsIcon sx={{ color: '#ffc107', fontSize: 18 }} />
               ) : (

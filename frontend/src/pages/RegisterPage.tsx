@@ -20,13 +20,13 @@ import {
     Person,
     Email,
     Lock,
-    Phone,
     Home,
     Agriculture,
     PersonAdd,
 } from '@mui/icons-material';
 import { useNavigate, Link } from 'react-router-dom';
 import authService from '../services/authService';
+import CountryPhoneSelector from '../components/CountryPhoneSelector';
 
 const RegisterPage: React.FC = () => {
     const navigate = useNavigate();
@@ -39,6 +39,7 @@ const RegisterPage: React.FC = () => {
         first_name: '',
         last_name: '',
         telefono: '',
+        codigo_pais: 'CO',
         direccion: '',
     });
     const [error, setError] = useState('');
@@ -51,6 +52,20 @@ const RegisterPage: React.FC = () => {
         setFormData(prev => ({
             ...prev,
             [name]: value
+        }));
+    };
+
+    const handleCountryChange = (countryCode: string) => {
+        setFormData(prev => ({
+            ...prev,
+            codigo_pais: countryCode
+        }));
+    };
+
+    const handlePhoneChange = (phoneNumber: string) => {
+        setFormData(prev => ({
+            ...prev,
+            telefono: phoneNumber
         }));
     };
 
@@ -185,8 +200,8 @@ const RegisterPage: React.FC = () => {
                             </Fade>
                         )}
 
-                        <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
-                            <Grid container spacing={3}>
+                        <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%', mt: 2 }}>
+                            <Grid container spacing={4}>
                                 <Grid size={{ xs: 12, sm: 6 }}>
                                     <TextField
                                         required
@@ -293,30 +308,13 @@ const RegisterPage: React.FC = () => {
                                         }}
                                     />
                                 </Grid>
-                                <Grid size={{ xs: 12, sm: 6 }}>
-                                    <TextField
+                                <Grid size={{ xs: 12 }}>
+                                    <CountryPhoneSelector
+                                        countryCode={formData.codigo_pais}
+                                        phoneNumber={formData.telefono}
+                                        onCountryChange={handleCountryChange}
+                                        onPhoneChange={handlePhoneChange}
                                         required
-                                        fullWidth
-                                        label="Teléfono"
-                                        name="telefono"
-                                        value={formData.telefono}
-                                        onChange={handleChange}
-                                        autoComplete="off"
-                                        InputProps={{
-                                            startAdornment: (
-                                                <InputAdornment position="start">
-                                                    <Phone sx={{ color: 'action.active' }} />
-                                                </InputAdornment>
-                                            ),
-                                        }}
-                                        sx={{
-                                            '& .MuiOutlinedInput-root': {
-                                                borderRadius: 2,
-                                                '&:hover fieldset': {
-                                                    borderColor: theme.palette.primary.main,
-                                                },
-                                            },
-                                        }}
                                     />
                                 </Grid>
                                 <Grid size={{ xs: 12, sm: 6 }}>
@@ -428,8 +426,8 @@ const RegisterPage: React.FC = () => {
                                 variant="contained"
                                 disabled={isLoading}
                                 sx={{ 
-                                    mt: 4, 
-                                    mb: 3,
+                                    mt: 6, 
+                                    mb: 4,
                                     py: 1.5,
                                     borderRadius: 2,
                                     fontSize: '1.1rem',

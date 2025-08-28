@@ -9,7 +9,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
-from .serializers import RegistroUsuarioSerializer, UsuarioSerializer
+from .serializers import RegistroUsuarioSerializer, UsuarioSerializer, PerfilUsuarioSerializer
 from .models import CodigoRecuperacion, SolicitudAdministrador
 from .permissions import EsAdministradorPermission
 
@@ -386,27 +386,24 @@ def verificar_codigo_administrador(request):
 
 class PerfilUsuarioView(generics.RetrieveUpdateAPIView):
     permission_classes = (permissions.IsAuthenticated,)
-    serializer_class = UsuarioSerializer
 
     def get_object(self):
         return self.request.user
     
+    def get_serializer_class(self):
+        """Usar serializer específico para perfil"""
+        if self.request.method in ['PUT', 'PATCH']:
+            return PerfilUsuarioSerializer
+        return UsuarioSerializer
+    
     def update(self, request, *args, **kwargs):
-        """Solo administradores pueden editar perfiles de usuario"""
-        if not request.user.es_administrador():
-            return Response(
-                {'detail': 'Solo los administradores pueden editar perfiles de usuario'}, 
-                status=status.HTTP_403_FORBIDDEN
-            )
+        """Los usuarios pueden editar su propio perfil"""
+        print(f"Datos recibidos para actualizar perfil: {request.data}")
         return super().update(request, *args, **kwargs)
     
     def partial_update(self, request, *args, **kwargs):
-        """Solo administradores pueden editar perfiles de usuario"""
-        if not request.user.es_administrador():
-            return Response(
-                {'detail': 'Solo los administradores pueden editar perfiles de usuario'}, 
-                status=status.HTTP_403_FORBIDDEN
-            )
+        """Los usuarios pueden editar su propio perfil"""
+        print(f"Datos recibidos para actualizar perfil (partial): {request.data}")
         return super().partial_update(request, *args, **kwargs)
 
 class ListaUsuariosView(generics.ListAPIView):
