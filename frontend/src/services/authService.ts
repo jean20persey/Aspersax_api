@@ -125,6 +125,67 @@ class AuthService {
             throw error.response?.data || error;
         }
     }
+
+    // Métodos para gestión de usuarios (solo administradores)
+    async obtenerUsuarios(): Promise<any> {
+        try {
+            const response = await axios.get(`${API_URL}/usuarios/`);
+            return response.data;
+        } catch (error: any) {
+            console.error('Error al obtener usuarios:', error.response?.data || error);
+            throw error.response?.data || error;
+        }
+    }
+
+    async obtenerUsuario(id: number): Promise<any> {
+        try {
+            const response = await axios.get(`${API_URL}/usuarios/${id}/`);
+            return response.data;
+        } catch (error: any) {
+            console.error('Error al obtener usuario:', error.response?.data || error);
+            throw error.response?.data || error;
+        }
+    }
+
+    async actualizarUsuario(id: number, userData: any): Promise<any> {
+        try {
+            const response = await axios.put(`${API_URL}/usuarios/${id}/`, userData);
+            return response.data;
+        } catch (error: any) {
+            console.error('Error al actualizar usuario:', error.response?.data || error);
+            throw error.response?.data || error;
+        }
+    }
+
+    async eliminarUsuario(id: number): Promise<any> {
+        try {
+            const response = await axios.delete(`${API_URL}/usuarios/${id}/`);
+            return response.data;
+        } catch (error: any) {
+            console.error('Error al eliminar usuario:', error.response?.data || error);
+            throw error.response?.data || error;
+        }
+    }
+
+    async obtenerPerfil(): Promise<any> {
+        try {
+            const response = await axios.get(`${API_URL}/perfil/`);
+            return response.data;
+        } catch (error: any) {
+            console.error('Error al obtener perfil:', error.response?.data || error);
+            throw error.response?.data || error;
+        }
+    }
+
+    // Verificar si el usuario actual es administrador
+    async esAdministrador(): Promise<boolean> {
+        try {
+            const perfil = await this.obtenerPerfil();
+            return perfil.rol === 'admin' || perfil.is_superuser;
+        } catch (error) {
+            return false;
+        }
+    }
 }
 
 export default new AuthService(); 

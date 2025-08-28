@@ -10,6 +10,7 @@ urlpatterns = [
     path('registro/', views.RegistroUsuarioView.as_view(), name='registro_usuario'),
     path('perfil/', views.PerfilUsuarioView.as_view(), name='perfil_usuario'),
     path('usuarios/', views.ListaUsuariosView.as_view(), name='lista_usuarios'),
+    path('usuarios/<int:pk>/', views.GestionUsuarioView.as_view(), name='gestion_usuario'),
     
     # Recuperación de contraseña
     path('enviar-codigo-recuperacion/', views.enviar_codigo_recuperacion, name='enviar_codigo_recuperacion'),

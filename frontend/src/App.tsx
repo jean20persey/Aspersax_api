@@ -14,6 +14,7 @@ import TanquesPage from './pages/TanquesPage';
 import JornadasPage from './pages/JornadasPage';
 import MalezasPage from './pages/MalezasPage';
 import ReportesPage from './pages/ReportesPage';
+import UsuariosPage from './pages/UsuariosPage';
 
 // Tema personalizado
 const theme = createTheme({
@@ -200,6 +201,16 @@ function App() {
               <ProtectedRoute>
                 <Layout>
                   <ReportesPage />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/usuarios"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <UsuariosPage />
                 </Layout>
               </ProtectedRoute>
             }

@@ -10,6 +10,7 @@ from django.conf import settings
 from django.utils import timezone
 from .serializers import RegistroUsuarioSerializer, UsuarioSerializer
 from .models import CodigoRecuperacion, SolicitudAdministrador
+from .permissions import EsAdministradorPermission
 
 User = get_user_model()
 
@@ -353,8 +354,47 @@ class PerfilUsuarioView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user
+    
+    def update(self, request, *args, **kwargs):
+        """Solo administradores pueden editar perfiles de usuario"""
+        if not request.user.es_administrador():
+            return Response(
+                {'detail': 'Solo los administradores pueden editar perfiles de usuario'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().update(request, *args, **kwargs)
+    
+    def partial_update(self, request, *args, **kwargs):
+        """Solo administradores pueden editar perfiles de usuario"""
+        if not request.user.es_administrador():
+            return Response(
+                {'detail': 'Solo los administradores pueden editar perfiles de usuario'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().partial_update(request, *args, **kwargs)
 
 class ListaUsuariosView(generics.ListAPIView):
-    permission_classes = (permissions.IsAdminUser,)
+    permission_classes = (EsAdministradorPermission,)
     queryset = User.objects.all()
-    serializer_class = UsuarioSerializer 
+    serializer_class = UsuarioSerializer
+
+class GestionUsuarioView(generics.RetrieveUpdateDestroyAPIView):
+    """Vista para que solo administradores puedan editar/eliminar usuarios"""
+    permission_classes = (EsAdministradorPermission,)
+    queryset = User.objects.all()
+    serializer_class = UsuarioSerializer
+    lookup_field = 'pk'
+    
+    def update(self, request, *args, **kwargs):
+        """Solo administradores pueden editar usuarios"""
+        return super().update(request, *args, **kwargs)
+    
+    def destroy(self, request, *args, **kwargs):
+        """Solo administradores pueden eliminar usuarios"""
+        usuario = self.get_object()
+        if usuario == request.user:
+            return Response(
+                {'detail': 'No puedes eliminar tu propia cuenta'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        return super().destroy(request, *args, **kwargs) 

@@ -16,6 +16,7 @@ import GrassIcon from '@mui/icons-material/Grass';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import PeopleIcon from '@mui/icons-material/People';
 import authService from '../services/authService';
 import { useState, useEffect } from 'react';
 
@@ -25,12 +26,21 @@ const Navigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [userRole, setUserRole] = useState<string>('viewer');
+  const [esAdmin, setEsAdmin] = useState(false);
 
   useEffect(() => {
-    const user = authService.getCurrentUser();
-    if (user && user.rol) {
-      setUserRole(user.rol);
-    }
+    const verificarRol = async () => {
+      try {
+        const esAdministrador = await authService.esAdministrador();
+        setEsAdmin(esAdministrador);
+        if (esAdministrador) {
+          setUserRole('admin');
+        }
+      } catch (error) {
+        console.error('Error verificando rol:', error);
+      }
+    };
+    verificarRol();
   }, []);
 
   const handleLogout = () => {
@@ -45,6 +55,7 @@ const Navigation = () => {
     { text: 'Jornadas', icon: <CalendarTodayIcon />, path: '/jornadas' },
     { text: 'Malezas', icon: <GrassIcon />, path: '/malezas' },
     { text: 'Reportes', icon: <AssessmentIcon />, path: '/reportes' },
+    ...(esAdmin ? [{ text: 'Usuarios', icon: <PeopleIcon />, path: '/usuarios' }] : []),
   ];
 
   const drawer = (
