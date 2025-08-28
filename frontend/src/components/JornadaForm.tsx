@@ -31,7 +31,7 @@ export interface JornadaFormData {
   malezas_detectadas: number;
   herbicida_usado: number;
   duracion: number;
-  estado: 'Completada' | 'En Progreso' | 'Pausada' | 'Cancelada';
+  estado: 'Completada' | 'En Progreso' | 'Pausada' | 'Programada' | 'Cancelada';
 }
 
 const JornadaForm: React.FC<JornadaFormProps> = ({ open, onClose, onSubmit, initialData, isEditing }) => {
@@ -43,7 +43,7 @@ const JornadaForm: React.FC<JornadaFormProps> = ({ open, onClose, onSubmit, init
     malezas_detectadas: 0,
     herbicida_usado: 0,
     duracion: 0,
-    estado: 'Completada',
+    estado: 'Programada',
   });
 
   React.useEffect(() => {
@@ -58,7 +58,7 @@ const JornadaForm: React.FC<JornadaFormProps> = ({ open, onClose, onSubmit, init
         malezas_detectadas: 0,
         herbicida_usado: 0,
         duracion: 0,
-        estado: 'Completada',
+        estado: 'Programada',
       });
     }
   }, [initialData, open, isEditing]);
@@ -75,9 +75,13 @@ const JornadaForm: React.FC<JornadaFormProps> = ({ open, onClose, onSubmit, init
   };
 
   const handleSelectChange = (e: SelectChangeEvent<number>) => {
+    const selectedRobotId = Number(e.target.value);
+    const selectedRobot = robots.find(robot => robot.id_robot === selectedRobotId);
+    
     setFormData(prev => ({
       ...prev,
-      robot_id: Number(e.target.value)
+      robot_id: selectedRobotId,
+      robot_nombre: selectedRobot ? selectedRobot.nombre : ''
     }));
   };
 
@@ -92,7 +96,7 @@ const JornadaForm: React.FC<JornadaFormProps> = ({ open, onClose, onSubmit, init
       malezas_detectadas: 0,
       herbicida_usado: 0,
       duracion: 0,
-      estado: 'Completada',
+      estado: 'Programada',
     });
   };
 
@@ -117,10 +121,13 @@ const JornadaForm: React.FC<JornadaFormProps> = ({ open, onClose, onSubmit, init
               <InputLabel>Robot</InputLabel>
               <Select
                 name="robot_id"
-                value={formData.robot_id}
+                value={formData.robot_id || ''}
                 label="Robot"
                 onChange={handleSelectChange}
               >
+                <MenuItem value="" disabled>
+                  Selecciona un robot
+                </MenuItem>
                 {robots.map(robot => (
                   <MenuItem key={robot.id_robot} value={robot.id_robot}>
                     {robot.nombre}
@@ -172,6 +179,22 @@ const JornadaForm: React.FC<JornadaFormProps> = ({ open, onClose, onSubmit, init
               inputProps={{ min: 1 }}
               fullWidth
             />
+
+            <FormControl fullWidth required>
+              <InputLabel>Estado</InputLabel>
+              <Select
+                name="estado"
+                value={formData.estado}
+                label="Estado"
+                onChange={(e) => setFormData(prev => ({ ...prev, estado: e.target.value as any }))}
+              >
+                <MenuItem value="Programada">Programada</MenuItem>
+                <MenuItem value="En Progreso">En Progreso</MenuItem>
+                <MenuItem value="Pausada">Pausada</MenuItem>
+                <MenuItem value="Completada">Completada</MenuItem>
+                <MenuItem value="Cancelada">Cancelada</MenuItem>
+              </Select>
+            </FormControl>
           </Box>
         </DialogContent>
         <DialogActions>

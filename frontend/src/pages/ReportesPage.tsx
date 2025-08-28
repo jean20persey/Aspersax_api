@@ -1,18 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import {
-    Typography,
     Box,
+    Typography,
+    Paper,
+    Grid,
     Card,
     CardContent,
-    Grid,
-    Button,
+    IconButton,
     Tabs,
     Tab,
-    FormControl,
-    InputLabel,
-    Select,
-    MenuItem,
-    TextField,
     Chip,
     Table,
     TableBody,
@@ -20,10 +16,18 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    Paper,
-    IconButton,
-    Tooltip,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    TextField,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
     Alert,
+    Snackbar,
+    Tooltip,
     CircularProgress
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -44,7 +48,10 @@ import {
     Pie,
     Cell,
     AreaChart,
-    Area
+    Area,
+    Legend,
+    ReferenceLine,
+    Brush,
 } from 'recharts';
 import {
     Assessment as AssessmentIcon,
@@ -53,12 +60,13 @@ import {
     Print as PrintIcon,
     Email as EmailIcon,
     FilterList as FilterIcon,
-    SmartToy as SmartToyIcon,
     WaterDrop as WaterDropIcon,
-    Grass as GrassIcon,
-    Terrain as TerrainIcon,
-    Schedule as ScheduleIcon
+    Terrain as TerrainIcon
 } from '@mui/icons-material';
+import SmartToyIcon from '@mui/icons-material/SmartToy';
+import ScheduleIcon from '@mui/icons-material/Schedule';
+import GrassIcon from '@mui/icons-material/Grass';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import mockDataService from '../services/mockDataService';
 import EmailDialog from '../components/EmailDialog';
 import emailService from '../services/emailService';
@@ -94,7 +102,7 @@ const ReportesPage: React.FC = () => {
     const robots = mockDataService.getRobots();
     const jornadas = mockDataService.getJornadas();
     const malezas = mockDataService.getMalezas();
-    const [tanques, setTanques] = useState([]);
+    const [tanques, setTanques] = useState<any[]>([]);
 
     useEffect(() => {
         loadReportData();
@@ -109,7 +117,7 @@ const ReportesPage: React.FC = () => {
     const loadReportData = () => {
         setLoading(true);
         const tanquesData = mockDataService.getTanques();
-        setTanques(tanquesData);
+        setTanques(tanquesData as any[]);
         generateReportData();
     };
 
@@ -172,10 +180,11 @@ const ReportesPage: React.FC = () => {
         
         return {
             robotsActivos: filteredRobots.filter(r => r.estado === 'En Operación').length,
-            robotsMantenimiento: filteredRobots.filter(r => r.estado === 'Mantenimiento').length,
-            tanquesLlenos: tanques.filter(t => t.estado === 'Lleno').length,
-            tanquesBajos: tanques.filter(t => t.estado === 'Bajo').length,
+            robotsMantenimiento: filteredRobots.filter(r => r.estado === 'En Mantenimiento').length,
+            tanquesLlenos: tanques.filter((t: any) => t.estado === 'Lleno').length,
+            tanquesBajos: tanques.filter((t: any) => t.estado === 'Bajo').length,
             malezasDetectadas: filteredMalezas.filter(m => m.estado === 'Detectada').length,
+            malezasTratadas: filteredMalezas.filter(m => m.estado === 'Tratada').length,
             malezasEliminadas: filteredMalezas.filter(m => m.estado === 'Eliminada').length
         };
     };
@@ -347,6 +356,7 @@ const ReportesPage: React.FC = () => {
                     { 'Concepto': 'Tanques Llenos', 'Cantidad': reportData.estadoSistema.tanquesLlenos },
                     { 'Concepto': 'Tanques Bajos', 'Cantidad': reportData.estadoSistema.tanquesBajos },
                     { 'Concepto': 'Malezas Detectadas', 'Cantidad': reportData.estadoSistema.malezasDetectadas },
+                    { 'Concepto': 'Malezas Tratadas', 'Cantidad': reportData.estadoSistema.malezasTratadas },
                     { 'Concepto': 'Malezas Eliminadas', 'Cantidad': reportData.estadoSistema.malezasEliminadas }
                 ]);
                 XLSX.utils.book_append_sheet(workbook, estadoSheet, 'Estado Sistema');
@@ -414,7 +424,50 @@ const ReportesPage: React.FC = () => {
         return reportTypes[activeTab] || 'Reporte General';
     };
 
-    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
+    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#ff7c7c'];
+    
+    // Componente personalizado para tooltips mejorados
+    const CustomTooltip = ({ active, payload, label, formatter }: any) => {
+        if (active && payload && payload.length) {
+            return (
+                <Box sx={{
+                    bgcolor: 'background.paper',
+                    p: 2,
+                    border: '1px solid #ccc',
+                    borderRadius: 2,
+                    boxShadow: 3,
+                    minWidth: 200
+                }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
+                        {label}
+                    </Typography>
+                    {payload.map((entry: any, index: number) => (
+                        <Typography key={index} variant="body2" sx={{ color: entry.color }}>
+                            {`${entry.name}: ${formatter ? formatter(entry.value, entry.name) : entry.value}`}
+                        </Typography>
+                    ))}
+                </Box>
+            );
+        }
+        return null;
+    };
+
+    const renderGradients = () => (
+        <defs>
+            <linearGradient id="colorEficiencia" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#667eea" stopOpacity={0.8}/>
+                <stop offset="95%" stopColor="#667eea" stopOpacity={0.1}/>
+            </linearGradient>
+            <linearGradient id="colorMalezas" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#ff7300" stopOpacity={0.8}/>
+                <stop offset="95%" stopColor="#ff7300" stopOpacity={0.1}/>
+            </linearGradient>
+            <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#667eea" stopOpacity={1}/>
+                <stop offset="100%" stopColor="#764ba2" stopOpacity={1}/>
+            </linearGradient>
+        </defs>
+    );
 
     return (
         <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -431,7 +484,7 @@ const ReportesPage: React.FC = () => {
                             Filtros y Configuración
                         </Typography>
                         <Grid container spacing={3} alignItems="center">
-                            <Grid item xs={12} sm={3}>
+                            <Grid xs={12} sm={3}>
                                 <DatePicker
                                     label="Fecha Inicio"
                                     value={fechaInicio}
@@ -442,7 +495,7 @@ const ReportesPage: React.FC = () => {
                                     slotProps={{ textField: { size: 'small' } }}
                                 />
                             </Grid>
-                            <Grid item xs={12} sm={3}>
+                            <Grid xs={12} sm={3}>
                                 <DatePicker
                                     label="Fecha Fin"
                                     value={fechaFin}
@@ -453,7 +506,7 @@ const ReportesPage: React.FC = () => {
                                     slotProps={{ textField: { size: 'small' } }}
                                 />
                             </Grid>
-                            <Grid item xs={12} sm={3}>
+                            <Grid xs={12} sm={3}>
                                 <FormControl size="small" sx={{ minWidth: 150 }}>
                                     <InputLabel>Robot</InputLabel>
                                     <Select
@@ -473,7 +526,7 @@ const ReportesPage: React.FC = () => {
                                     </Select>
                                 </FormControl>
                             </Grid>
-                            <Grid item xs={12} sm={3}>
+                            <Grid xs={12} sm={3}>
                                 <Box sx={{ display: 'flex', gap: 1 }}>
                                     <Tooltip title="Exportar PDF">
                                         <IconButton onClick={handleExportPDF} color="error">
@@ -522,17 +575,37 @@ const ReportesPage: React.FC = () => {
                                     <Box>
                                         <Typography variant="h6" sx={{ mb: 3 }}>Reporte de Productividad</Typography>
                                         
-                                        {/* Gráfico de eficiencia por robot */}
-                                        <Card sx={{ mb: 3 }}>
+                                        {/* Gráfico de eficiencia por robot mejorado */}
+                                        <Card sx={{ mb: 3, boxShadow: 3 }}>
                                             <CardContent>
-                                                <Typography variant="h6" sx={{ mb: 2 }}>Eficiencia por Jornada (ha/hora)</Typography>
-                                                <ResponsiveContainer width="100%" height={300}>
-                                                    <BarChart data={reportData.productividad}>
-                                                        <CartesianGrid strokeDasharray="3 3" />
-                                                        <XAxis dataKey="fecha" />
-                                                        <YAxis />
-                                                        <RechartsTooltip />
-                                                        <Bar dataKey="eficiencia" fill="#8884d8" />
+                                                <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
+                                                    <TrendingUpIcon sx={{ mr: 1, color: 'primary.main' }} />
+                                                    Eficiencia por Jornada (ha/hora)
+                                                </Typography>
+                                                <ResponsiveContainer width="100%" height={350}>
+                                                    <BarChart data={reportData.productividad} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                                                        {renderGradients()}
+                                                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                                                        <XAxis 
+                                                            dataKey="fecha" 
+                                                            tick={{ fontSize: 12 }}
+                                                            tickLine={{ stroke: '#ccc' }}
+                                                        />
+                                                        <YAxis 
+                                                            tick={{ fontSize: 12 }}
+                                                            tickLine={{ stroke: '#ccc' }}
+                                                            label={{ value: 'Eficiencia (ha/h)', angle: -90, position: 'insideLeft' }}
+                                                        />
+                                                        <CustomTooltip 
+                                                            formatter={(value: any) => [`${value} ha/h`, 'Eficiencia']}
+                                                        />
+                                                        <Bar 
+                                                            dataKey="eficiencia" 
+                                                            fill="url(#barGradient)"
+                                                            radius={[4, 4, 0, 0]}
+                                                            animationDuration={1000}
+                                                        />
+                                                        <ReferenceLine y={10} stroke="#ff7300" strokeDasharray="5 5" label="Meta: 10 ha/h" />
                                                     </BarChart>
                                                 </ResponsiveContainer>
                                             </CardContent>
@@ -580,28 +653,28 @@ const ReportesPage: React.FC = () => {
                                         <Typography variant="h6" sx={{ mb: 3 }}>Estado Actual del Sistema</Typography>
                                         
                                         <Grid container spacing={3} sx={{ mb: 3 }}>
-                                            <Grid item xs={12} sm={6} md={3}>
+                                            <Grid xs={12} sm={6} md={3}>
                                                 <Card sx={{ textAlign: 'center', p: 2 }}>
                                                     <SmartToyIcon sx={{ fontSize: 40, color: 'primary.main', mb: 1 }} />
                                                     <Typography variant="h4">{reportData.estadoSistema.robotsActivos}</Typography>
                                                     <Typography variant="body2" color="text.secondary">Robots Activos</Typography>
                                                 </Card>
                                             </Grid>
-                                            <Grid item xs={12} sm={6} md={3}>
+                                            <Grid xs={12} sm={6} md={3}>
                                                 <Card sx={{ textAlign: 'center', p: 2 }}>
                                                     <WaterDropIcon sx={{ fontSize: 40, color: 'info.main', mb: 1 }} />
                                                     <Typography variant="h4">{reportData.estadoSistema.tanquesLlenos}</Typography>
                                                     <Typography variant="body2" color="text.secondary">Tanques Llenos</Typography>
                                                 </Card>
                                             </Grid>
-                                            <Grid item xs={12} sm={6} md={3}>
+                                            <Grid xs={12} sm={6} md={3}>
                                                 <Card sx={{ textAlign: 'center', p: 2 }}>
                                                     <GrassIcon sx={{ fontSize: 40, color: 'success.main', mb: 1 }} />
                                                     <Typography variant="h4">{reportData.estadoSistema.malezasDetectadas}</Typography>
                                                     <Typography variant="body2" color="text.secondary">Malezas Detectadas</Typography>
                                                 </Card>
                                             </Grid>
-                                            <Grid item xs={12} sm={6} md={3}>
+                                            <Grid xs={12} sm={6} md={3}>
                                                 <Card sx={{ textAlign: 'center', p: 2 }}>
                                                     <TerrainIcon sx={{ fontSize: 40, color: 'warning.main', mb: 1 }} />
                                                     <Typography variant="h4">{jornadas.length}</Typography>
@@ -612,7 +685,7 @@ const ReportesPage: React.FC = () => {
 
                                         {/* Gráfico de distribución */}
                                         <Grid container spacing={3}>
-                                            <Grid item xs={12} md={6}>
+                                            <Grid xs={12} md={6}>
                                                 <Card>
                                                     <CardContent>
                                                         <Typography variant="h6" sx={{ mb: 2 }}>Estado de Robots</Typography>
@@ -640,7 +713,7 @@ const ReportesPage: React.FC = () => {
                                                     </CardContent>
                                                 </Card>
                                             </Grid>
-                                            <Grid item xs={12} md={6}>
+                                            <Grid xs={12} md={6}>
                                                 <Card>
                                                     <CardContent>
                                                         <Typography variant="h6" sx={{ mb: 2 }}>Estado de Malezas</Typography>
@@ -677,33 +750,107 @@ const ReportesPage: React.FC = () => {
                                     <Box>
                                         <Typography variant="h6" sx={{ mb: 3 }}>Análisis de Tendencias (Últimos 7 días)</Typography>
                                         
-                                        <Card sx={{ mb: 3 }}>
+                                        <Card sx={{ mb: 3, boxShadow: 3 }}>
                                             <CardContent>
-                                                <Typography variant="h6" sx={{ mb: 2 }}>Evolución de Jornadas y Área Cubierta</Typography>
-                                                <ResponsiveContainer width="100%" height={300}>
-                                                    <LineChart data={reportData.tendencias}>
-                                                        <CartesianGrid strokeDasharray="3 3" />
-                                                        <XAxis dataKey="fecha" />
-                                                        <YAxis yAxisId="left" />
-                                                        <YAxis yAxisId="right" orientation="right" />
-                                                        <RechartsTooltip />
-                                                        <Line yAxisId="left" type="monotone" dataKey="jornadas" stroke="#8884d8" name="Jornadas" />
-                                                        <Line yAxisId="right" type="monotone" dataKey="area" stroke="#82ca9d" name="Área (ha)" />
+                                                <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
+                                                    <ScheduleIcon sx={{ mr: 1, color: 'primary.main' }} />
+                                                    Evolución de Jornadas y Área Cubierta
+                                                </Typography>
+                                                <ResponsiveContainer width="100%" height={400}>
+                                                    <LineChart data={reportData.tendencias} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+                                                        {renderGradients()}
+                                                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                                                        <XAxis 
+                                                            dataKey="fecha" 
+                                                            tick={{ fontSize: 12 }}
+                                                            tickLine={{ stroke: '#ccc' }}
+                                                            angle={-45}
+                                                            textAnchor="end"
+                                                            height={60}
+                                                        />
+                                                        <YAxis 
+                                                            yAxisId="left" 
+                                                            tick={{ fontSize: 12 }}
+                                                            tickLine={{ stroke: '#ccc' }}
+                                                            label={{ value: 'Jornadas', angle: -90, position: 'insideLeft' }}
+                                                        />
+                                                        <YAxis 
+                                                            yAxisId="right" 
+                                                            orientation="right"
+                                                            tick={{ fontSize: 12 }}
+                                                            tickLine={{ stroke: '#ccc' }}
+                                                            label={{ value: 'Área (ha)', angle: 90, position: 'insideRight' }}
+                                                        />
+                                                        <CustomTooltip 
+                                                            formatter={(value: any, name: string) => [
+                                                                name === 'jornadas' ? `${value} jornadas` : `${value} ha`,
+                                                                name === 'jornadas' ? 'Jornadas' : 'Área Cubierta'
+                                                            ]}
+                                                        />
+                                                        <Legend />
+                                                        <Line 
+                                                            yAxisId="left" 
+                                                            type="monotone" 
+                                                            dataKey="jornadas" 
+                                                            stroke="#667eea" 
+                                                            strokeWidth={3}
+                                                            dot={{ fill: '#667eea', strokeWidth: 2, r: 6 }}
+                                                            activeDot={{ r: 8, stroke: '#667eea', strokeWidth: 2 }}
+                                                            name="Jornadas"
+                                                            animationDuration={1500}
+                                                        />
+                                                        <Line 
+                                                            yAxisId="right" 
+                                                            type="monotone" 
+                                                            dataKey="area" 
+                                                            stroke="#82ca9d" 
+                                                            strokeWidth={3}
+                                                            dot={{ fill: '#82ca9d', strokeWidth: 2, r: 6 }}
+                                                            activeDot={{ r: 8, stroke: '#82ca9d', strokeWidth: 2 }}
+                                                            name="Área (ha)"
+                                                            animationDuration={1500}
+                                                        />
                                                     </LineChart>
                                                 </ResponsiveContainer>
                                             </CardContent>
                                         </Card>
 
-                                        <Card>
+                                        <Card sx={{ boxShadow: 3 }}>
                                             <CardContent>
-                                                <Typography variant="h6" sx={{ mb: 2 }}>Detección de Malezas por Día</Typography>
-                                                <ResponsiveContainer width="100%" height={300}>
-                                                    <AreaChart data={reportData.tendencias}>
-                                                        <CartesianGrid strokeDasharray="3 3" />
-                                                        <XAxis dataKey="fecha" />
-                                                        <YAxis />
-                                                        <RechartsTooltip />
-                                                        <Area type="monotone" dataKey="malezas" stroke="#ff7300" fill="#ff7300" fillOpacity={0.6} />
+                                                <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
+                                                    <GrassIcon sx={{ mr: 1, color: 'success.main' }} />
+                                                    Detección de Malezas por Día
+                                                </Typography>
+                                                <ResponsiveContainer width="100%" height={350}>
+                                                    <AreaChart data={reportData.tendencias} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+                                                        {renderGradients()}
+                                                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                                                        <XAxis 
+                                                            dataKey="fecha" 
+                                                            tick={{ fontSize: 12 }}
+                                                            tickLine={{ stroke: '#ccc' }}
+                                                            angle={-45}
+                                                            textAnchor="end"
+                                                            height={60}
+                                                        />
+                                                        <YAxis 
+                                                            tick={{ fontSize: 12 }}
+                                                            tickLine={{ stroke: '#ccc' }}
+                                                            label={{ value: 'Malezas Detectadas', angle: -90, position: 'insideLeft' }}
+                                                        />
+                                                        <CustomTooltip 
+                                                            formatter={(value: any) => [`${value} malezas`, 'Malezas Detectadas']}
+                                                        />
+                                                        <Area 
+                                                            type="monotone" 
+                                                            dataKey="malezas" 
+                                                            stroke="#ff7300" 
+                                                            strokeWidth={2}
+                                                            fill="url(#colorMalezas)" 
+                                                            fillOpacity={0.8}
+                                                            animationDuration={2000}
+                                                        />
+                                                        <Brush dataKey="fecha" height={30} stroke="#ff7300" />
                                                     </AreaChart>
                                                 </ResponsiveContainer>
                                             </CardContent>
@@ -717,25 +864,25 @@ const ReportesPage: React.FC = () => {
                                         <Typography variant="h6" sx={{ mb: 3 }}>Análisis de Costos Operativos</Typography>
                                         
                                         <Grid container spacing={3} sx={{ mb: 3 }}>
-                                            <Grid item xs={12} sm={6} md={3}>
+                                            <Grid xs={12} sm={6} md={3}>
                                                 <Card sx={{ textAlign: 'center', p: 2, bgcolor: 'primary.light', color: 'white' }}>
                                                     <Typography variant="h4">${reportData.costos.herbicida.toLocaleString('es-CO')} COP</Typography>
                                                     <Typography variant="body2">Costo Herbicida</Typography>
                                                 </Card>
                                             </Grid>
-                                            <Grid item xs={12} sm={6} md={3}>
+                                            <Grid xs={12} sm={6} md={3}>
                                                 <Card sx={{ textAlign: 'center', p: 2, bgcolor: 'success.light', color: 'white' }}>
                                                     <Typography variant="h4">${reportData.costos.energia.toLocaleString('es-CO')} COP</Typography>
                                                     <Typography variant="body2">Costo Energía</Typography>
                                                 </Card>
                                             </Grid>
-                                            <Grid item xs={12} sm={6} md={3}>
+                                            <Grid xs={12} sm={6} md={3}>
                                                 <Card sx={{ textAlign: 'center', p: 2, bgcolor: 'warning.light', color: 'white' }}>
                                                     <Typography variant="h4">${reportData.costos.mantenimiento.toLocaleString('es-CO')} COP</Typography>
                                                     <Typography variant="body2">Mantenimiento</Typography>
                                                 </Card>
                                             </Grid>
-                                            <Grid item xs={12} sm={6} md={3}>
+                                            <Grid xs={12} sm={6} md={3}>
                                                 <Card sx={{ textAlign: 'center', p: 2, bgcolor: 'error.light', color: 'white' }}>
                                                     <Typography variant="h4">${reportData.costos.total.toLocaleString('es-CO')} COP</Typography>
                                                     <Typography variant="body2">Costo Total</Typography>
@@ -743,28 +890,56 @@ const ReportesPage: React.FC = () => {
                                             </Grid>
                                         </Grid>
 
-                                        <Card>
+                                        <Card sx={{ boxShadow: 3 }}>
                                             <CardContent>
-                                                <Typography variant="h6" sx={{ mb: 2 }}>Distribución de Costos</Typography>
-                                                <ResponsiveContainer width="100%" height={300}>
+                                                <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
+                                                    <AttachMoneyIcon sx={{ mr: 1, color: 'primary.main' }} />
+                                                    Distribución de Costos
+                                                </Typography>
+                                                <ResponsiveContainer width="100%" height={400}>
                                                     <PieChart>
                                                         <Pie
                                                             data={[
-                                                                { name: 'Herbicida', value: reportData.costos.herbicida },
-                                                                { name: 'Energía', value: reportData.costos.energia },
-                                                                { name: 'Mantenimiento', value: reportData.costos.mantenimiento }
+                                                                { name: 'Herbicida', value: reportData.costos.herbicida, color: '#667eea' },
+                                                                { name: 'Energía', value: reportData.costos.energia, color: '#82ca9d' },
+                                                                { name: 'Mantenimiento', value: reportData.costos.mantenimiento, color: '#ff7300' }
                                                             ]}
                                                             cx="50%"
                                                             cy="50%"
-                                                            outerRadius={100}
+                                                            innerRadius={60}
+                                                            outerRadius={120}
+                                                            paddingAngle={5}
                                                             dataKey="value"
-                                                            label={({ name, value }) => `${name}: $${value.toLocaleString('es-CO')} COP`}
+                                                            animationBegin={0}
+                                                            animationDuration={1500}
+                                                            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
+                                                            labelLine={false}
                                                         >
-                                                            {COLORS.map((color, index) => (
-                                                                <Cell key={`cell-${index}`} fill={color} />
+                                                            {[
+                                                                { name: 'Herbicida', value: reportData.costos.herbicida, color: '#667eea' },
+                                                                { name: 'Energía', value: reportData.costos.energia, color: '#82ca9d' },
+                                                                { name: 'Mantenimiento', value: reportData.costos.mantenimiento, color: '#ff7300' }
+                                                            ].map((entry, index) => (
+                                                                <Cell 
+                                                                    key={`cell-${index}`} 
+                                                                    fill={entry.color}
+                                                                    stroke={entry.color}
+                                                                    strokeWidth={2}
+                                                                />
                                                             ))}
                                                         </Pie>
-                                                        <RechartsTooltip formatter={(value) => `$${Number(value).toLocaleString('es-CO')} COP`} />
+                                                        <CustomTooltip 
+                                                            formatter={(value: any) => [`$${Number(value).toLocaleString('es-CO')} COP`, 'Costo']}
+                                                        />
+                                                        <Legend 
+                                                            verticalAlign="bottom" 
+                                                            height={36}
+                                                            formatter={(value, entry: any) => (
+                                                                <span style={{ color: entry.color, fontWeight: 'bold' }}>
+                                                                    {value}
+                                                                </span>
+                                                            )}
+                                                        />
                                                     </PieChart>
                                                 </ResponsiveContainer>
                                             </CardContent>

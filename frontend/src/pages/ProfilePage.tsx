@@ -12,6 +12,7 @@ import {
     InputAdornment,
     CircularProgress,
     Fade,
+    Skeleton,
 } from '@mui/material';
 import {
     Person,
@@ -137,9 +138,40 @@ const ProfilePage: React.FC = () => {
     if (loading) {
         return (
             <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
-                    <CircularProgress size={60} />
-                </Box>
+                <Paper
+                    elevation={8}
+                    sx={{
+                        p: 4,
+                        borderRadius: 3,
+                        background: 'rgba(255, 255, 255, 0.95)',
+                        backdropFilter: 'blur(20px)',
+                    }}
+                >
+                    {/* Header Skeleton */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
+                        <Skeleton variant="circular" width={80} height={80} sx={{ mr: 3 }} />
+                        <Box sx={{ flex: 1 }}>
+                            <Skeleton variant="text" width={200} height={40} sx={{ mb: 1 }} />
+                            <Skeleton variant="text" width={120} height={24} sx={{ mb: 1 }} />
+                            <Skeleton variant="text" width={150} height={20} />
+                        </Box>
+                        <Skeleton variant="rectangular" width={140} height={48} sx={{ borderRadius: 2 }} />
+                    </Box>
+
+                    <Divider sx={{ mb: 4 }} />
+
+                    {/* Form Skeleton */}
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                        <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
+                            <Skeleton variant="rectangular" width="100%" height={56} sx={{ borderRadius: 2 }} />
+                            <Skeleton variant="rectangular" width="100%" height={56} sx={{ borderRadius: 2 }} />
+                        </Box>
+                        <Skeleton variant="rectangular" width="100%" height={56} sx={{ borderRadius: 2 }} />
+                        <Skeleton variant="rectangular" width="100%" height={56} sx={{ borderRadius: 2 }} />
+                        <Skeleton variant="rectangular" width="100%" height={56} sx={{ borderRadius: 2 }} />
+                        <Skeleton variant="rectangular" width="100%" height={120} sx={{ borderRadius: 2 }} />
+                    </Box>
+                </Paper>
             </Container>
         );
     }
@@ -208,12 +240,16 @@ const ProfilePage: React.FC = () => {
                             sx={{
                                 minWidth: 140,
                                 background: editing ? 'transparent' : 'linear-gradient(135deg, #45b939 0%, #2e7d32 100%)',
+                                transition: 'all 0.3s ease-in-out',
+                                transform: editing ? 'scale(1.05)' : 'scale(1)',
                                 '&:hover': {
                                     background: editing ? 'rgba(69, 185, 57, 0.1)' : 'linear-gradient(135deg, #2e7d32 0%, #1a9f0b 100%)',
+                                    transform: 'scale(1.05)',
+                                    boxShadow: editing ? '0 4px 20px rgba(69, 185, 57, 0.3)' : '0 4px 20px rgba(46, 125, 50, 0.4)',
                                 }
                             }}
                         >
-                            {saving ? <CircularProgress size={20} /> : (editing ? 'Guardar' : 'Editar Perfil')}
+                            {saving ? <CircularProgress size={20} color="inherit" /> : (editing ? 'Guardar' : 'Editar Perfil')}
                         </Button>
                     </Box>
 

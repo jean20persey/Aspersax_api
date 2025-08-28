@@ -3,7 +3,7 @@
 export interface Robot {
   id_robot: number;
   nombre: string;
-  estado: 'Disponible' | 'En Mantenimiento' | 'En Operación' | 'Inactivo' | 'Mantenimiento';
+  estado: 'Disponible' | 'En Mantenimiento' | 'En Operación' | 'Inactivo' | 'Mantenimiento' | 'Fuera de Servicio';
   bateria: number;
   ultima_actividad: string;
   activo: boolean;
@@ -170,6 +170,26 @@ class MockDataService {
       activo: true,
       ubicacion: 'Almacén Central',
       modelo: 'SSX3-2024'
+    },
+    {
+      id_robot: 9,
+      nombre: 'Aspersax01',
+      estado: 'En Mantenimiento',
+      bateria: 50,
+      ultima_actividad: '2025-08-28T12:03:42',
+      activo: true,
+      ubicacion: 'Taller de Mantenimiento',
+      modelo: 'ASX-2024'
+    },
+    {
+      id_robot: 10,
+      nombre: 'Robot Test',
+      estado: 'Fuera de Servicio',
+      bateria: 0,
+      ultima_actividad: '2025-08-28T12:07:07',
+      activo: false,
+      ubicacion: 'Almacén',
+      modelo: 'RT-2024'
     }
   ];
 
