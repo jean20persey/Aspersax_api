@@ -5,6 +5,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import permissions
+from rest_framework_simplejwt.views import TokenObtainPairView
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
@@ -13,6 +14,41 @@ from .models import CodigoRecuperacion, SolicitudAdministrador
 from .permissions import EsAdministradorPermission
 
 User = get_user_model()
+
+class LoginPersonalizadoView(TokenObtainPairView):
+    """Vista personalizada de login que devuelve errores específicos"""
+    
+    def post(self, request, *args, **kwargs):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        
+        if not username or not password:
+            return Response({
+                'detail': 'Usuario y contraseña son requeridos'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Verificar si el usuario existe
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            return Response({
+                'detail': 'El nombre de usuario no existe'
+            }, status=status.HTTP_401_UNAUTHORIZED)
+        
+        # Verificar si la contraseña es correcta
+        if not user.check_password(password):
+            return Response({
+                'detail': 'La contraseña es incorrecta'
+            }, status=status.HTTP_401_UNAUTHORIZED)
+        
+        # Verificar si el usuario está activo
+        if not user.is_active:
+            return Response({
+                'detail': 'Esta cuenta está desactivada'
+            }, status=status.HTTP_401_UNAUTHORIZED)
+        
+        # Si todo está bien, proceder con el login normal
+        return super().post(request, *args, **kwargs)
 
 @api_view(['GET'])
 @permission_classes([permissions.AllowAny])
