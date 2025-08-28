@@ -132,10 +132,20 @@ class AuthService {
     }
 
     // Métodos para gestión de usuarios (solo administradores)
-    async obtenerUsuarios(): Promise<any> {
+    async obtenerUsuarios(): Promise<any[]> {
         try {
             const response = await axios.get(`${API_URL}/usuarios/`);
-            return response.data;
+            const data = response.data;
+            // Asegurar que siempre devolvemos un array
+            if (Array.isArray(data)) {
+                return data;
+            } else if (data && Array.isArray(data.results)) {
+                // Si la respuesta tiene paginación
+                return data.results;
+            } else {
+                console.warn('Respuesta inesperada del servidor:', data);
+                return [];
+            }
         } catch (error: any) {
             console.error('Error al obtener usuarios:', error.response?.data || error);
             throw error.response?.data || error;

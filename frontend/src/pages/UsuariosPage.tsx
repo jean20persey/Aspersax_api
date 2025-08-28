@@ -23,7 +23,8 @@ import {
     Alert, 
     Chip,
     IconButton,
-    Tooltip
+    Tooltip,
+    CircularProgress
 } from '@mui/material';
 import { 
     Edit as EditIcon, 
@@ -77,23 +78,35 @@ const UsuariosPage: React.FC = () => {
 
     const verificarPermisos = async () => {
         try {
-            const esAdministrador = await authService.esAdministrador();
+            const perfil = await authService.obtenerPerfil();
+            const esAdministrador = perfil.rol === 'admin' || perfil.is_superuser;
             setEsAdmin(esAdministrador);
             if (!esAdministrador) {
                 setError('No tienes permisos para acceder a esta página');
+                setLoading(false);
             }
         } catch (error) {
+            console.error('Error al verificar permisos:', error);
             setError('Error al verificar permisos');
+            setLoading(false);
         }
     };
 
     const cargarUsuarios = async () => {
         try {
-            setLoading(true);
             const data = await authService.obtenerUsuarios();
-            setUsuarios(data);
+            // Validar que data sea un array
+            if (Array.isArray(data)) {
+                setUsuarios(data);
+            } else {
+                console.warn('Los datos recibidos no son un array:', data);
+                setUsuarios([]);
+                setError('Error en el formato de datos recibidos del servidor');
+            }
         } catch (error: any) {
-            setError(error.detail || 'Error al cargar usuarios');
+            console.error('Error al cargar usuarios:', error);
+            setError(error.detail || error.message || 'Error al cargar usuarios');
+            setUsuarios([]); // Asegurar que usuarios sea un array vacío en caso de error
         } finally {
             setLoading(false);
         }
@@ -155,7 +168,19 @@ const UsuariosPage: React.FC = () => {
         );
     };
 
-    if (!esAdmin && !loading) {
+    // Mostrar loading mientras se cargan los datos
+    if (loading) {
+        return (
+            <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+                    <CircularProgress size={60} />
+                </Box>
+            </Container>
+        );
+    }
+
+    // Mostrar error de permisos si no es admin
+    if (!esAdmin) {
         return (
             <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
                 <Alert severity="error">
@@ -188,7 +213,14 @@ const UsuariosPage: React.FC = () => {
                 </Alert>
             )}
 
-            <TableContainer component={Paper}>
+            {usuarios.length === 0 && !error ? (
+                <Box sx={{ textAlign: 'center', py: 4 }}>
+                    <Typography variant="h6" color="text.secondary">
+                        No hay usuarios para mostrar
+                    </Typography>
+                </Box>
+            ) : (
+                <TableContainer component={Paper}>
                 <Table>
                     <TableHead>
                         <TableRow>
@@ -234,7 +266,8 @@ const UsuariosPage: React.FC = () => {
                         ))}
                     </TableBody>
                 </Table>
-            </TableContainer>
+                </TableContainer>
+            )}
 
             {/* Diálogo de edición */}
             <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>

@@ -164,7 +164,7 @@ const LoginPage: React.FC = () => {
                                 id="username"
                                 label="Usuario"
                                 name="username"
-                                autoComplete="username"
+                                autoComplete="off"
                                 autoFocus
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
@@ -195,7 +195,7 @@ const LoginPage: React.FC = () => {
                                 label="Contraseña"
                                 type={showPassword ? 'text' : 'password'}
                                 id="password"
-                                autoComplete="current-password"
+                                autoComplete="off"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 InputProps={{

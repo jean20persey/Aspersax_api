@@ -47,7 +47,7 @@ import WarningIcon from '@mui/icons-material/Warning';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { mockDataService } from '../services/mockDataService';
 import { robotsService, tanquesService, malezasService, jornadasService } from '../services/api';
-
+import UserProfileCard from '../components/UserProfileCard';
 
 interface StatCardProps {
     title: string;
@@ -320,8 +320,20 @@ const DashboardPage: React.FC = () => {
                 </Box>
             </Box>
 
-            {/* Estadísticas principales */}
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 3, mb: 4 }}>
+            {/* Perfil de Usuario y Estadísticas principales */}
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: 3, mb: 4 }}>
+                {/* Tarjeta de perfil de usuario */}
+                <Box sx={{ flex: { lg: '0 0 400px' } }}>
+                    <UserProfileCard />
+                </Box>
+                
+                {/* Estadísticas principales */}
+                <Box sx={{ 
+                    flex: 1,
+                    display: 'grid', 
+                    gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(2, 1fr)', xl: 'repeat(4, 1fr)' }, 
+                    gap: 3 
+                }}>
                 <Box>
                     <StatCard
                         title="Robots Activos"
@@ -367,6 +379,7 @@ const DashboardPage: React.FC = () => {
                         status="+8% vs semana anterior"
                         trend="+8%"
                     />
+                </Box>
                 </Box>
             </Box>
 

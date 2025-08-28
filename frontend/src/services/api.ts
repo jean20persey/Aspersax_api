@@ -74,4 +74,19 @@ export const malezasService = {
   delete: (id: number) => api.delete(`/malezas/${id}/`),
 };
 
-export default api; 
+// Servicios de reportes
+export const reportesService = {
+  getAll: () => api.get('/reportes/'),
+  getById: (id: number) => api.get(`/reportes/${id}/`),
+  generate: (data: any) => api.post('/reportes/', data),
+  export: (id: number, format: string) => api.get(`/reportes/${id}/export/?format=${format}`),
+};
+
+// Servicios de notificaciones
+export const notificacionesService = {
+  getAll: () => api.get('/notificaciones/'),
+  markAsRead: (id: number) => api.patch(`/notificaciones/${id}/`, { leida: true }),
+  markAllAsRead: () => api.patch('/notificaciones/mark-all-read/'),
+};
+
+export default api;
