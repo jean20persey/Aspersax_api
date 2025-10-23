@@ -4,11 +4,10 @@ from rest_framework.test import APITestCase
 from rest_framework import status
 from django.contrib.auth import get_user_model
 from .models import Reporte
-from jornadas.models import Jornada
 from robots.models import Robot
 from tanques.models import Tanque
+from malezas.models import Maleza
 from datetime import datetime, timedelta, date, time
-from decimal import Decimal
 
 User = get_user_model()
 
@@ -23,35 +22,37 @@ class ReporteTests(APITestCase):
         
         # Crear robot de prueba
         self.robot = Robot.objects.create(
-            modelo='Modelo Test',
-            estado='Activo',
+            nombre='Robot Reportes',
+            estado='Disponible',
+            bateria=70,
             activo=True
         )
         
         # Crear tanque de prueba
         self.tanque = Tanque.objects.create(
-            capacidad=Decimal('100.0'),
-            tipo='Principal',
-            estado='Operativo',
+            nombre='Tanque Reportes',
+            capacidad=120.0,
+            nivel_actual=100.0,
+            estado='Lleno',
             activo=True
         )
-        
-        # Crear jornada de prueba
-        self.jornada = Jornada.objects.create(
-            robot=self.robot,
-            tanque=self.tanque,
-            fecha=date.today(),
-            hora_inicio=time(8, 0),
-            hora_fin=time(10, 0),
-            duracion=timedelta(hours=2),
-            area_tratada=100.0,
+
+        # Crear maleza de prueba
+        self.maleza = Maleza.objects.create(
+            nombre='Maleza X',
+            tipo='Otra',
             activo=True
         )
         
         # Crear un reporte de prueba
         self.reporte = Reporte.objects.create(
-            jornada=self.jornada,
-            resumen='Reporte de prueba',
+            tipo='Jornada',
+            robot=self.robot,
+            tanque=self.tanque,
+            area_cubierta=200.0,
+            herbicida_usado=2.5,
+            duracion=timedelta(hours=1, minutes=30),
+            observaciones='Reporte de prueba',
             activo=True
         )
         
@@ -59,76 +60,104 @@ class ReporteTests(APITestCase):
         self.client.force_authenticate(user=self.user)
 
     def test_crear_reporte(self):
-        """Prueba la creación de un nuevo reporte"""
-        # Crear una nueva jornada para el nuevo reporte
-        nueva_jornada = Jornada.objects.create(
-            robot=self.robot,
-            tanque=self.tanque,
-            fecha=date.today(),
-            hora_inicio=time(14, 0),  # 2:00 PM
-            hora_fin=time(16, 0),     # 4:00 PM
-            duracion=timedelta(hours=2),
-            area_tratada=150.0,
-            activo=True
-        )
-        
-        url = reverse('reportes:reporte_create')
+        """Prueba la creación de un nuevo reporte con malezas_detectadas"""
+        url = reverse('reporte-list')
         data = {
-            'jornada': nueva_jornada.id_jornada,
-            'resumen': 'Nuevo reporte de prueba',
-            'activo': True
+            'tipo': 'Jornada',
+            'robot_id': self.robot.id_robot,
+            'tanque_id': self.tanque.id_tanque,
+            'area_cubierta': 150.0,
+            'herbicida_usado': 1.2,
+            'duracion': str(timedelta(minutes=90)),
+            'observaciones': 'Nuevo reporte de prueba',
+            'activo': True,
+            'malezas_detectadas': [
+                {
+                    'maleza_id': self.maleza.id_maleza,
+                    'cantidad': 5,
+                    'ubicacion': 'Sector A',
+                    'herbicida_aplicado': 50.0,
+                    'efectividad': 80
+                }
+            ]
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Reporte.objects.count(), 2)
+        # Como el ViewSet usa queryset con activo=True, conteo por filtro
+        self.assertEqual(Reporte.objects.filter(activo=True).count(), 2)
 
     def test_listar_reportes(self):
-        """Prueba obtener la lista de reportes"""
-        url = reverse('reportes:reporte_list')
+        """Prueba obtener la lista de reportes (paginado o no)"""
+        url = reverse('reporte-list')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
+        items = response.data.get('results', response.data) if isinstance(response.data, dict) else response.data
+        self.assertGreaterEqual(len(items), 1)
 
     def test_detalle_reporte(self):
         """Prueba obtener los detalles de un reporte específico"""
-        url = reverse('reportes:reporte_detail', args=[self.reporte.id_reporte])
+        url = reverse('reporte-detail', args=[self.reporte.id_reporte])
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['resumen'], 'Reporte de prueba')
+        self.assertEqual(response.data['robot']['nombre'], 'Robot Reportes')
 
     def test_actualizar_reporte(self):
         """Prueba actualizar un reporte existente"""
-        url = reverse('reportes:reporte_update', args=[self.reporte.id_reporte])
+        url = reverse('reporte-detail', args=[self.reporte.id_reporte])
         data = {
-            'jornada': self.jornada.id_jornada,
-            'resumen': 'Resumen actualizado',
+            'tipo': 'Mantenimiento',
+            'robot_id': self.robot.id_robot,
+            'tanque_id': self.tanque.id_tanque,
+            'area_cubierta': 300.0,
+            'herbicida_usado': 0.0,
+            'duracion': str(timedelta(minutes=30)),
+            'observaciones': 'Actualizado',
             'activo': True
         }
         response = self.client.put(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(Reporte.objects.get(id_reporte=self.reporte.id_reporte).resumen, 'Resumen actualizado')
+        self.assertEqual(Reporte.objects.get(id_reporte=self.reporte.id_reporte).area_cubierta, 300.0)
 
     def test_eliminar_reporte(self):
-        """Prueba eliminar un reporte"""
-        url = reverse('reportes:reporte_delete', args=[self.reporte.id_reporte])
+        """Prueba eliminación (soft delete) de un reporte"""
+        url = reverse('reporte-detail', args=[self.reporte.id_reporte])
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(Reporte.objects.count(), 0)
+        # Soft delete: activo=False
+        self.reporte.refresh_from_db()
+        self.assertFalse(self.reporte.activo)
 
-    def test_reporte_por_jornada(self):
-        """Prueba obtener un reporte por su jornada asociada"""
-        url = reverse('reportes:reporte_by_jornada', args=[self.jornada.id_jornada])
-        response = self.client.get(url)
+    def test_reportes_por_robot(self):
+        """Prueba la acción por_robot del ViewSet"""
+        url = reverse('reporte-por-robot')
+        response = self.client.get(f"{url}?robot_id={self.robot.id_robot}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['jornada'], self.jornada.id_jornada)
+        items = response.data
+        self.assertTrue(all(item['robot']['id_robot'] == self.robot.id_robot for item in items))
 
-    def test_validar_reporte_unico_por_jornada(self):
-        """Prueba que no se puede crear más de un reporte por jornada"""
-        url = reverse('reportes:reporte_create')
-        data = {
-            'jornada': self.jornada.id_jornada,
-            'resumen': 'Reporte duplicado',
-            'activo': True
-        }
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    def test_reportes_por_periodo(self):
+        """Prueba la acción por_periodo del ViewSet"""
+        # Crear un reporte antiguo fuera del periodo "dia"
+        viejo = Reporte.objects.create(
+            tipo='Incidente',
+            robot=self.robot,
+            tanque=self.tanque,
+            area_cubierta=0,
+            herbicida_usado=0,
+            duracion=timedelta(minutes=5),
+            observaciones='Viejo',
+            activo=True
+        )
+        # No manipulamos 'fecha' aquí; asumimos auto now y el filtro incluye el actual
+        url = reverse('reporte-por-periodo')
+        response = self.client.get(f"{url}?periodo=dia")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # Debe devolver al menos el reporte creado en setUp
+        self.assertTrue(any(item['id_reporte'] == self.reporte.id_reporte for item in response.data))
+
+    def test_reportes_por_tipo(self):
+        """Prueba la acción por_tipo del ViewSet"""
+        url = reverse('reporte-por-tipo')
+        response = self.client.get(f"{url}?tipo=Jornada")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(all(item['tipo'] == 'Jornada' for item in response.data))

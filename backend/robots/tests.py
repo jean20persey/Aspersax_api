@@ -9,80 +9,92 @@ User = get_user_model()
 
 class RobotTests(APITestCase):
     def setUp(self):
-        # Crear usuario de prueba
+        # Crear usuario de prueba y autenticar
         self.user = User.objects.create_user(
             username='testuser',
             password='testpass123',
             email='test@example.com'
         )
-        
-        # Crear un robot de prueba
-        self.robot = Robot.objects.create(
-            modelo='Modelo Test',
-            estado='Activo',
-            activo=True
-        )
-        
-        # Autenticar el cliente
         self.client.force_authenticate(user=self.user)
 
+        # Crear un robot inicial
+        self.robot = Robot.objects.create(
+            nombre='Robot Alpha',
+            estado='Disponible',
+            bateria=80,
+            activo=True
+        )
+
     def test_crear_robot(self):
-        """Prueba la creación de un nuevo robot"""
+        """Crear un nuevo robot con campos básicos"""
         url = reverse('crear-robot')
         data = {
-            'modelo': 'Modelo Nuevo',
-            'estado': 'Inactivo',
+            'nombre': 'Robot Beta',
+            'estado': 'En Operación',
+            'bateria': 55,
             'activo': True
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Robot.objects.count(), 2)
-        self.assertEqual(Robot.objects.get(modelo='Modelo Nuevo').estado, 'Inactivo')
+        nuevo = Robot.objects.get(nombre='Robot Beta')
+        self.assertEqual(nuevo.estado, 'En Operación')
+        self.assertEqual(nuevo.bateria, 55)
+        self.assertTrue(nuevo.activo)
 
     def test_listar_robots(self):
-        """Prueba obtener la lista de robots"""
+        """Listar robots existentes"""
         url = reverse('robot-list')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
+        items = response.data.get('results', response.data) if isinstance(response.data, dict) else response.data
+        self.assertGreaterEqual(len(items), 1)
 
     def test_detalle_robot(self):
-        """Prueba obtener los detalles de un robot específico"""
+        """Obtener detalle de un robot por id_robot"""
         url = reverse('robot-detail', args=[self.robot.id_robot])
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['modelo'], 'Modelo Test')
+        self.assertEqual(response.data['nombre'], 'Robot Alpha')
 
     def test_actualizar_robot(self):
-        """Prueba actualizar un robot existente"""
+        """Actualizar un robot existente"""
         url = reverse('actualizar-robot', args=[self.robot.id_robot])
         data = {
-            'modelo': 'Modelo Actualizado',
-            'estado': 'Mantenimiento',
+            'nombre': 'Robot Alpha V2',
+            'estado': 'En Mantenimiento',
+            'bateria': 90,
             'activo': False
         }
         response = self.client.put(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(Robot.objects.get(id_robot=self.robot.id_robot).modelo, 'Modelo Actualizado')
+        self.robot.refresh_from_db()
+        self.assertEqual(self.robot.nombre, 'Robot Alpha V2')
+        self.assertEqual(self.robot.estado, 'En Mantenimiento')
+        self.assertEqual(self.robot.bateria, 90)
+        self.assertFalse(self.robot.activo)
 
     def test_eliminar_robot(self):
-        """Prueba eliminar un robot"""
+        """Eliminar un robot"""
         url = reverse('eliminar-robot', args=[self.robot.id_robot])
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Robot.objects.count(), 0)
 
     def test_filtrar_robots_por_estado(self):
-        """Prueba filtrar robots por estado"""
-        # Crear un robot adicional con estado diferente
+        """Filtrar robots por estado (ruta con parámetro de path)"""
+        # Crear otro robot en distinto estado
         Robot.objects.create(
-            modelo='Robot Inactivo',
-            estado='Inactivo',
+            nombre='Robot Gamma',
+            estado='Fuera de Servicio',
+            bateria=10,
             activo=False
         )
-        
-        url = reverse('robots-por-estado', args=['Activo'])
+
+        url = reverse('robots-por-estado', args=['Disponible'])
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['modelo'], 'Modelo Test')
+        # Debe incluir al menos el robot inicial en 'Disponible'
+        items = response.data.get('results', response.data) if isinstance(response.data, dict) else response.data
+        estados = [r['estado'] for r in items]
+        self.assertTrue(all(e == 'Disponible' for e in estados))

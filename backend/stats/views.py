@@ -31,7 +31,8 @@ def get_stats(request):
 
         stats = {
             'total_robots': Robot.objects.filter(activo=True).count(),
-            'robots_activos': Robot.objects.filter(activo=True, estado='Activo').count(),
+            # Consideramos "activos" a los robots en operación
+            'robots_activos': Robot.objects.filter(activo=True, estado='En Operación').count(),
             'total_tanques': Tanque.objects.filter(activo=True).count(),
             'tanques_en_uso': Tanque.objects.filter(activo=True, estado__in=['Lleno', 'Medio', 'Bajo']).count(),
             'total_malezas': Maleza.objects.filter(activo=True).count(),
@@ -90,7 +91,7 @@ def get_robot_stats(request):
     try:
         logger.info('Iniciando get_robot_stats')
         robots = Robot.objects.filter(activo=True).values(
-            'id', 'nombre', 'estado', 'bateria', 'ultima_actividad'
+            'id_robot', 'nombre', 'estado', 'bateria', 'ultima_actividad'
         )
         logger.info(f'Robot stats generados: {list(robots)}')
         return Response(list(robots))

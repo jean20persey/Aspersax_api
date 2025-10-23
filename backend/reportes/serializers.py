@@ -21,6 +21,15 @@ class DetalleMalezaSerializer(serializers.ModelSerializer):
                  'ubicacion', 'herbicida_aplicado', 'efectividad']
         read_only_fields = ['id_detalle']
 
+    def create(self, validated_data):
+        # Si no se proporcionó el reporte explícitamente, obténgalo del contexto
+        if 'reporte' not in validated_data:
+            reporte = self.context.get('reporte')
+            if reporte is None:
+                raise serializers.ValidationError('Reporte no proporcionado para el detalle de maleza')
+            validated_data['reporte'] = reporte
+        return super().create(validated_data)
+
 class ReporteSerializer(serializers.ModelSerializer):
     robot = RobotSerializer(read_only=True)
     robot_id = serializers.PrimaryKeyRelatedField(

@@ -16,17 +16,11 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    TextField,
     FormControl,
     InputLabel,
     Select,
     MenuItem,
     Alert,
-    Snackbar,
     Tooltip,
     CircularProgress
 } from '@mui/material';
@@ -484,7 +478,7 @@ const ReportesPage: React.FC = () => {
                             Filtros y Configuración
                         </Typography>
                         <Grid container spacing={3} alignItems="center">
-                            <Grid xs={12} sm={3}>
+                            <Grid size={{ xs: 12, sm: 3 }}>
                                 <DatePicker
                                     label="Fecha Inicio"
                                     value={fechaInicio}
@@ -495,7 +489,7 @@ const ReportesPage: React.FC = () => {
                                     slotProps={{ textField: { size: 'small' } }}
                                 />
                             </Grid>
-                            <Grid xs={12} sm={3}>
+                            <Grid size={{ xs: 12, sm: 3 }}>
                                 <DatePicker
                                     label="Fecha Fin"
                                     value={fechaFin}
@@ -506,7 +500,7 @@ const ReportesPage: React.FC = () => {
                                     slotProps={{ textField: { size: 'small' } }}
                                 />
                             </Grid>
-                            <Grid xs={12} sm={3}>
+                            <Grid size={{ xs: 12, sm: 3 }}>
                                 <FormControl size="small" sx={{ minWidth: 150 }}>
                                     <InputLabel>Robot</InputLabel>
                                     <Select
@@ -526,7 +520,7 @@ const ReportesPage: React.FC = () => {
                                     </Select>
                                 </FormControl>
                             </Grid>
-                            <Grid xs={12} sm={3}>
+                            <Grid size={{ xs: 12, sm: 3 }}>
                                 <Box sx={{ display: 'flex', gap: 1 }}>
                                     <Tooltip title="Exportar PDF">
                                         <IconButton onClick={handleExportPDF} color="error">
@@ -653,28 +647,28 @@ const ReportesPage: React.FC = () => {
                                         <Typography variant="h6" sx={{ mb: 3 }}>Estado Actual del Sistema</Typography>
                                         
                                         <Grid container spacing={3} sx={{ mb: 3 }}>
-                                            <Grid xs={12} sm={6} md={3}>
+                                            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                                 <Card sx={{ textAlign: 'center', p: 2 }}>
                                                     <SmartToyIcon sx={{ fontSize: 40, color: 'primary.main', mb: 1 }} />
                                                     <Typography variant="h4">{reportData.estadoSistema.robotsActivos}</Typography>
                                                     <Typography variant="body2" color="text.secondary">Robots Activos</Typography>
                                                 </Card>
                                             </Grid>
-                                            <Grid xs={12} sm={6} md={3}>
+                                            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                                 <Card sx={{ textAlign: 'center', p: 2 }}>
                                                     <WaterDropIcon sx={{ fontSize: 40, color: 'info.main', mb: 1 }} />
                                                     <Typography variant="h4">{reportData.estadoSistema.tanquesLlenos}</Typography>
                                                     <Typography variant="body2" color="text.secondary">Tanques Llenos</Typography>
                                                 </Card>
                                             </Grid>
-                                            <Grid xs={12} sm={6} md={3}>
+                                            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                                 <Card sx={{ textAlign: 'center', p: 2 }}>
                                                     <GrassIcon sx={{ fontSize: 40, color: 'success.main', mb: 1 }} />
                                                     <Typography variant="h4">{reportData.estadoSistema.malezasDetectadas}</Typography>
                                                     <Typography variant="body2" color="text.secondary">Malezas Detectadas</Typography>
                                                 </Card>
                                             </Grid>
-                                            <Grid xs={12} sm={6} md={3}>
+                                            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                                 <Card sx={{ textAlign: 'center', p: 2 }}>
                                                     <TerrainIcon sx={{ fontSize: 40, color: 'warning.main', mb: 1 }} />
                                                     <Typography variant="h4">{jornadas.length}</Typography>
@@ -685,7 +679,7 @@ const ReportesPage: React.FC = () => {
 
                                         {/* Gráfico de distribución */}
                                         <Grid container spacing={3}>
-                                            <Grid xs={12} md={6}>
+                                            <Grid size={{ xs: 12, md: 6 }}>
                                                 <Card>
                                                     <CardContent>
                                                         <Typography variant="h6" sx={{ mb: 2 }}>Estado de Robots</Typography>
@@ -713,7 +707,7 @@ const ReportesPage: React.FC = () => {
                                                     </CardContent>
                                                 </Card>
                                             </Grid>
-                                            <Grid xs={12} md={6}>
+                                            <Grid size={{ xs: 12, md: 6 }}>
                                                 <Card>
                                                     <CardContent>
                                                         <Typography variant="h6" sx={{ mb: 2 }}>Estado de Malezas</Typography>
@@ -864,25 +858,25 @@ const ReportesPage: React.FC = () => {
                                         <Typography variant="h6" sx={{ mb: 3 }}>Análisis de Costos Operativos</Typography>
                                         
                                         <Grid container spacing={3} sx={{ mb: 3 }}>
-                                            <Grid xs={12} sm={6} md={3}>
+                                            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                                 <Card sx={{ textAlign: 'center', p: 2, bgcolor: 'primary.light', color: 'white' }}>
                                                     <Typography variant="h4">${reportData.costos.herbicida.toLocaleString('es-CO')} COP</Typography>
                                                     <Typography variant="body2">Costo Herbicida</Typography>
                                                 </Card>
                                             </Grid>
-                                            <Grid xs={12} sm={6} md={3}>
+                                            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                                 <Card sx={{ textAlign: 'center', p: 2, bgcolor: 'success.light', color: 'white' }}>
                                                     <Typography variant="h4">${reportData.costos.energia.toLocaleString('es-CO')} COP</Typography>
                                                     <Typography variant="body2">Costo Energía</Typography>
                                                 </Card>
                                             </Grid>
-                                            <Grid xs={12} sm={6} md={3}>
+                                            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                                 <Card sx={{ textAlign: 'center', p: 2, bgcolor: 'warning.light', color: 'white' }}>
                                                     <Typography variant="h4">${reportData.costos.mantenimiento.toLocaleString('es-CO')} COP</Typography>
                                                     <Typography variant="body2">Mantenimiento</Typography>
                                                 </Card>
                                             </Grid>
-                                            <Grid xs={12} sm={6} md={3}>
+                                            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                                                 <Card sx={{ textAlign: 'center', p: 2, bgcolor: 'error.light', color: 'white' }}>
                                                     <Typography variant="h4">${reportData.costos.total.toLocaleString('es-CO')} COP</Typography>
                                                     <Typography variant="body2">Costo Total</Typography>

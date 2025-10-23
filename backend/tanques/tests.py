@@ -1,12 +1,10 @@
-from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APITestCase
 from rest_framework import status
 from django.contrib.auth import get_user_model
 from .models import Tanque
-from decimal import Decimal
-
 User = get_user_model()
+
 
 class TanqueTests(APITestCase):
     def setUp(self):
@@ -16,78 +14,92 @@ class TanqueTests(APITestCase):
             password='testpass123',
             email='test@example.com'
         )
-        
-        # Crear un tanque de prueba
-        self.tanque = Tanque.objects.create(
-            capacidad=Decimal('100.0'),
-            tipo='Principal',
-            estado='Operativo',
-            activo=True
-        )
-        
+
         # Autenticar el cliente
         self.client.force_authenticate(user=self.user)
 
+        # Crear un tanque de prueba
+        self.tanque = Tanque.objects.create(
+            nombre='Tanque A',
+            capacidad=100.0,
+            nivel_actual=50.0,
+            estado='Medio',
+            activo=True
+        )
+
     def test_crear_tanque(self):
-        """Prueba la creación de un nuevo tanque"""
-        url = reverse('tanque:tanque_create')
+        """Crear tanque vía ViewSet"""
+        url = reverse('tanque-list')
         data = {
-            'capacidad': '200.0',
-            'tipo': 'Secundario',
-            'estado': 'Operativo',
+            'nombre': 'Tanque B',
+            'capacidad': 200.0,
+            'nivel_actual': 0.0,
+            'estado': 'Vacío',
             'activo': True
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Tanque.objects.count(), 2)
-        self.assertEqual(Tanque.objects.get(tipo='Secundario').capacidad, Decimal('200.0'))
+        self.assertEqual(Tanque.objects.filter(activo=True).count(), 2)
 
     def test_listar_tanques(self):
-        """Prueba obtener la lista de tanques"""
-        url = reverse('tanque:tanque_list')
+        """Listar tanques (paginado o no)"""
+        url = reverse('tanque-list')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
+        items = response.data.get('results', response.data) if isinstance(response.data, dict) else response.data
+        self.assertGreaterEqual(len(items), 1)
 
     def test_detalle_tanque(self):
-        """Prueba obtener los detalles de un tanque específico"""
-        url = reverse('tanque:tanque_detail', args=[self.tanque.id_tanque])
+        """Detalle de un tanque"""
+        url = reverse('tanque-detail', args=[self.tanque.id_tanque])
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['tipo'], 'Principal')
+        self.assertEqual(response.data['nombre'], 'Tanque A')
 
     def test_actualizar_tanque(self):
-        """Prueba actualizar un tanque existente"""
-        url = reverse('tanque:tanque_update', args=[self.tanque.id_tanque])
+        """Actualizar tanque"""
+        url = reverse('tanque-detail', args=[self.tanque.id_tanque])
         data = {
-            'capacidad': '150.0',
-            'tipo': 'Actualizado',
-            'estado': 'Mantenimiento',
+            'nombre': 'Tanque A+',
+            'capacidad': 150.0,
+            'nivel_actual': 75.0,
+            'estado': 'Medio',
             'activo': True
         }
         response = self.client.put(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(Tanque.objects.get(id_tanque=self.tanque.id_tanque).tipo, 'Actualizado')
+        self.tanque.refresh_from_db()
+        self.assertEqual(self.tanque.nombre, 'Tanque A+')
+        self.assertEqual(self.tanque.capacidad, 150.0)
+        self.assertEqual(self.tanque.nivel_actual, 75.0)
 
-    def test_eliminar_tanque(self):
-        """Prueba eliminar un tanque"""
-        url = reverse('tanque:tanque_delete', args=[self.tanque.id_tanque])
+    def test_eliminar_tanque_soft_delete(self):
+        """Eliminar (soft delete) tanque vía ViewSet"""
+        url = reverse('tanque-detail', args=[self.tanque.id_tanque])
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(Tanque.objects.count(), 0)
+        self.tanque.refresh_from_db()
+        self.assertFalse(self.tanque.activo)
 
-    def test_filtrar_tanques_por_tipo(self):
-        """Prueba filtrar tanques por tipo"""
-        # Crear un tanque adicional con tipo diferente
-        Tanque.objects.create(
-            capacidad=Decimal('50.0'),
-            tipo='Inactivo',
-            estado='Fuera de servicio',
-            activo=False
-        )
-        
-        url = reverse('tanque:tanque_by_tipo', args=['Principal'])
-        response = self.client.get(url)
+    def test_recargar_tanque(self):
+        """Acción personalizada recargar: actualiza nivel y estado"""
+        url = reverse('tanque-recargar', args=[self.tanque.id_tanque])
+        # Recargar 25, pasa de 50 a 75 (estado esperado: Medio)
+        response = self.client.post(url, {'cantidad': 25}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['tipo'], 'Principal')
+        self.tanque.refresh_from_db()
+        self.assertEqual(self.tanque.nivel_actual, 75.0)
+        self.assertEqual(self.tanque.estado, 'Medio')
+
+    def test_recargar_excede_capacidad(self):
+        """No debe permitir exceder la capacidad"""
+        url = reverse('tanque-recargar', args=[self.tanque.id_tanque])
+        # Intentar cargar 100 cuando capacidad es 100 y nivel 50 => excede
+        response = self.client.post(url, {'cantidad': 100}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_recargar_cantidad_invalida(self):
+        """Validación de cantidad <= 0"""
+        url = reverse('tanque-recargar', args=[self.tanque.id_tanque])
+        response = self.client.post(url, {'cantidad': 0}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

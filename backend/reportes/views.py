@@ -61,8 +61,11 @@ class ReporteViewSet(viewsets.ModelViewSet):
         reporte = serializer.save()
 
         for maleza_data in malezas_data:
-            maleza_data['reporte'] = reporte.id_reporte
-            detalle_serializer = DetalleMalezaSerializer(data=maleza_data)
+            # Pasamos el reporte en el contexto para que el serializer lo asigne
+            detalle_serializer = DetalleMalezaSerializer(
+                data=maleza_data,
+                context={'reporte': reporte}
+            )
             detalle_serializer.is_valid(raise_exception=True)
             detalle_serializer.save()
 
