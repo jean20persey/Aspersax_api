@@ -18,6 +18,8 @@ class EnviarEmailView(APIView):
             
             # Extraer datos del request
             destinatarios = data.get('destinatarios', [])
+            if 'destinatario' in data and not destinatarios:
+                destinatarios = [data.get('destinatario')]
             asunto = data.get('asunto', '')
             mensaje = data.get('mensaje', '')
             adjuntos = data.get('adjuntos', [])

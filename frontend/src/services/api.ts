@@ -6,6 +6,8 @@ import api from './axiosConfig';
 
 export interface Robot {
   id_robot: number;
+  /** Finca a la que pertenece el robot. Siempre 'Finca La Riverita' */
+  finca: string;
   nombre: string;
   estado: 'Disponible' | 'En Mantenimiento' | 'En Operación' | 'Fuera de Servicio';
   bateria: number;
@@ -25,6 +27,8 @@ export interface Tanque {
 
 export interface Jornada {
   id_jornada: number;
+  /** Finca donde se realizó la jornada. Siempre 'Finca La Riverita' */
+  finca: string;
   fecha: string;
   hora_inicio: string;
   hora_fin: string;
@@ -37,9 +41,15 @@ export interface Jornada {
 
 export interface Maleza {
   id_maleza: number;
+  /** Finca donde se detectó la romaza. Siempre 'Finca La Riverita' */
+  finca: string;
+  /** Área de trabajo dentro de la finca (ej: Lote 1, Sector Norte) */
   nombre: string;
+  /** Nombre científico de la maleza. Por defecto: Rumex crispus */
   nombre_cientifico: string | null;
-  tipo: 'Hoja Ancha' | 'Hoja Angosta' | 'Gramínea' | 'Otra';
+  /** Número de plantas de Romaza (Rumex crispus) detectadas en el área */
+  cantidad_romaza: number;
+  /** Observaciones del área de trabajo */
   descripcion: string | null;
   temporada: string | null;
   resistencia_herbicida: boolean;

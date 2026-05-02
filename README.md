@@ -13,18 +13,30 @@ Aspersax es una plataforma web que permite controlar y monitorear robots que apl
 - Generación de reportes
 - Dashboard con estadísticas
 
-## Tecnologías usadas
+## Objetivos del Proyecto
 
-**Backend:**
-- Python con Django y Django REST Framework
-- PostgreSQL como base de datos
-- Autenticación con JWT (SimpleJWT)
+**Objetivo General:**
+Desarrollar un sistema de información web integral para la gestión, control y monitoreo eficiente de robots aspersores de herbicida autónomos, optimizando los procesos agrícolas.
 
-**Frontend:**
-- React con TypeScript
-- Material UI para los componentes
-- Vite como bundler
-- Axios para las peticiones HTTP
+**Objetivos Específicos:**
+- Implementar un módulo de control de inventario y estado para los robots y tanques de herbicida.
+- Desarrollar un sistema de registro de malezas para identificar zonas críticas de intervención en los cultivos.
+- Automatizar la programación y seguimiento de jornadas de trabajo agrícola.
+- Generar reportes y métricas estadísticas en tiempo real que faciliten la toma de decisiones para la mejora continua.
+
+## Tecnologías y Herramientas por Etapa del Ciclo de Vida
+
+Para dar cumplimiento a las fases metodológicas del desarrollo del proyecto (compuesto por 8 módulos funcionales), se utilizaron las siguientes herramientas:
+
+| Etapa del Ciclo de Vida | Herramientas y Tecnologías Utilizadas |
+| :--- | :--- |
+| **1. Planificación y Requisitos** | GitHub Projects, Notion (historias de usuario y requerimientos). |
+| **2. Diseño (UI/UX y Datos)** | Figma (prototipado de interfaces), Draw.io (diagramas de BD). |
+| **3. Desarrollo (Backend)** | Python, Django, Django REST Framework, SimpleJWT. |
+| **4. Desarrollo (Frontend)** | React, TypeScript, Material UI, Vite, Axios, ExcelJS, JSPDF. |
+| **5. Base de Datos** | PostgreSQL. |
+| **6. Pruebas (Testing)** | Postman (pruebas de API), React / Chrome DevTools. |
+| **7. Control de Versiones** | Git, GitHub (evidencia de mejora continua en los commits). |
 
 ## Requisitos
 

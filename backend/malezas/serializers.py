@@ -8,12 +8,22 @@ class InformacionTecnicaMalezaSerializer(serializers.ModelSerializer):
 
 class MalezaSerializer(serializers.ModelSerializer):
     informacion_tecnica = InformacionTecnicaMalezaSerializer(read_only=True)
-    
+
     class Meta:
         model = Maleza
-        fields = ['id_maleza', 'nombre', 'nombre_cientifico', 'tipo',
-                 'descripcion', 'temporada', 'resistencia_herbicida', 'activo', 'informacion_tecnica']
-        read_only_fields = ['id_maleza']
+        fields = [
+            'id_maleza',
+            'finca',          # Finca La Riverita (solo lectura)
+            'nombre',         # Área de trabajo / lote / sector
+            'nombre_cientifico',
+            'cantidad_romaza',
+            'descripcion',
+            'temporada',
+            'resistencia_herbicida',
+            'activo',
+            'informacion_tecnica',
+        ]
+        read_only_fields = ['id_maleza', 'finca']
 
 class MalezaDetectadaSerializer(serializers.ModelSerializer):
     class Meta:

@@ -68,7 +68,7 @@ def get_activity_data(request):
 @permission_classes([IsAuthenticated])
 def get_robot_stats(request):
     robots = Robot.objects.filter(activo=True).values(
-        'id', 'nombre', 'estado', 'bateria', 'ultima_actividad'
+        'id_robot', 'nombre', 'estado', 'bateria', 'ultima_actividad'
     )
     return Response(list(robots))
 

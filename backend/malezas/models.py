@@ -3,29 +3,61 @@ from django.db import models
 from jornadas.models import Jornada
 
 class Maleza(models.Model):
-    TIPOS = [
-        ('Hoja Ancha', 'Hoja Ancha'),
-        ('Hoja Angosta', 'Hoja Angosta'),
-        ('Gramínea', 'Gramínea'),
-        ('Otra', 'Otra'),
-    ]
-
     id_maleza = models.AutoField(primary_key=True, editable=False, db_column='T004IdMaleza')
-    nombre = models.CharField(max_length=100, default="Maleza sin nombre", db_column='T004Nombre')
-    nombre_cientifico = models.CharField(max_length=200, blank=True, null=True, db_column='T004NombreCientifico')
-    tipo = models.CharField(max_length=50, choices=TIPOS, default='Otra', db_column='T004Tipo')
-    descripcion = models.TextField(blank=True, null=True, db_column='T004Descripcion')
-    temporada = models.CharField(max_length=100, blank=True, null=True, db_column='T004Temporada')
-    resistencia_herbicida = models.BooleanField(default=False, db_column='T004ResistenciaHerbicida')
+    finca = models.CharField(
+        max_length=100,
+        default='Finca La Riverita',
+        editable=False,  # La finca está fija para este proyecto
+        db_column='T004Finca',
+        verbose_name='Finca'
+    )
+    nombre = models.CharField(
+        max_length=100,
+        db_column='T004Nombre',
+        verbose_name='Área de Trabajo',
+        help_text='Nombre del lote o sector de la Finca La Riverita (ej: Lote 1, Sector Norte)'
+    )
+    nombre_cientifico = models.CharField(
+        max_length=200,
+        default='Rumex crispus',
+        blank=True,
+        null=True,
+        db_column='T004NombreCientifico',
+        verbose_name='Nombre Científico de la Maleza'
+    )
+    cantidad_romaza = models.IntegerField(
+        default=0,
+        db_column='T004Cantidad',
+        verbose_name='Cantidad de plantas Romaza detectadas'
+    )
+    descripcion = models.TextField(
+        blank=True,
+        null=True,
+        db_column='T004Descripcion',
+        verbose_name='Observaciones del área'
+    )
+    temporada = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        db_column='T004Temporada',
+        verbose_name='Temporada de detección'
+    )
+    resistencia_herbicida = models.BooleanField(
+        default=False,
+        db_column='T004ResistenciaHerbicida',
+        verbose_name='¿Romaza resistente al herbicida?'
+    )
     activo = models.BooleanField(default=True, db_column='T004Activo')
-    
+
     def __str__(self):
-        return f"{self.nombre} ({self.tipo})"
-    
+        return f"{self.finca} — {self.nombre}: {self.cantidad_romaza} plantas de Romaza"
+
     class Meta:
         db_table = 'T004Maleza'
-        verbose_name = 'Maleza'
-        verbose_name_plural = 'Malezas'
+        verbose_name = 'Registro de Romaza'
+        verbose_name_plural = 'Registros de Romaza'
+        ordering = ['-id_maleza']
 
 class MalezaDetectada(models.Model):
     id = models.AutoField(primary_key=True, editable=False, db_column='T005IdMalezaDetectada')
@@ -38,7 +70,7 @@ class MalezaDetectada(models.Model):
     activo = models.BooleanField(default=True, db_column='T005Activo')
     
     def __str__(self):
-        return f"{self.maleza.nombre} ({self.maleza.tipo}) detectada en jornada {self.jornada.id_jornada}"
+        return f"{self.maleza.nombre} detectada en jornada {self.jornada.id_jornada}"
     
     class Meta:
         db_table = 'T005MalezaDetectada'

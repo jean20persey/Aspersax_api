@@ -237,7 +237,7 @@ def cambiar_password_con_codigo(request):
     """Cambia contraseña usando código de verificación"""
     email = request.data.get('email')
     codigo = request.data.get('codigo')
-    nueva_password = request.data.get('nueva_password')
+    nueva_password = request.data.get('nueva_password') or request.data.get('new_password')
     
     if not email or not codigo or not nueva_password:
         return Response(
