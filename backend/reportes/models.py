@@ -32,6 +32,7 @@ class Reporte(models.Model):
         db_table = 'T005Reporte'
         verbose_name = 'Reporte'
         verbose_name_plural = 'Reportes'
+        ordering = ['-fecha']
 
 class DetalleMaleza(models.Model):
     id_detalle = models.AutoField(primary_key=True, editable=False, db_column='T006IdDetalle')

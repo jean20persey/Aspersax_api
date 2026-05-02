@@ -39,8 +39,9 @@ class ReporteTests(APITestCase):
 
         # Crear maleza de prueba
         self.maleza = Maleza.objects.create(
-            nombre='Maleza X',
-            tipo='Otra',
+            nombre='Lote 1 - Sector Norte',
+            nombre_cientifico='Rumex crispus',
+            descripcion='Prueba',
             activo=True
         )
         

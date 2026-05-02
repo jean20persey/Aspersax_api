@@ -22,7 +22,7 @@ class StatsEndpointsTests(APITestCase):
         # Datos base
         self.robot = Robot.objects.create(nombre='R1', estado='En Operación', bateria=80, activo=True)
         self.tanque = Tanque.objects.create(nombre='T1', capacidad=100, nivel_actual=50, estado='Medio', activo=True)
-        self.maleza = Maleza.objects.create(nombre='Weed', tipo='Otra', activo=True)
+        self.maleza = Maleza.objects.create(nombre='Weed', nombre_cientifico='Rumex crispus', activo=True)
 
         self.reporte = Reporte.objects.create(
             tipo='Jornada', robot=self.robot, tanque=self.tanque,

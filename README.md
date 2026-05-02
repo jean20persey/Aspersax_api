@@ -1,28 +1,28 @@
 # Aspersax API
 
-Sistema para la gestión de robots aspersores de herbicida. Proyecto desarrollado para la materia de Sistemas de Información.
+Sistema para la gestión de robots aspersores de herbicida.
 
 ## ¿Qué es Aspersax?
 
-Aspersax es una plataforma web que permite controlar y monitorear robots que aplican herbicida de forma autónoma en cultivos. El sistema incluye:
+Aspersax es una plataforma que permite controlar y monitorear robots que aplican herbicida de forma autónoma, diseñada específicamente para el control de la maleza **Romaza (*Rumex crispus*)** en la **Finca La Riverita**. El sistema incluye:
 
-- Registro y seguimiento de robots aspersores
-- Control de tanques de herbicida
-- Registro de malezas detectadas
-- Programación de jornadas de trabajo
-- Generación de reportes
-- Dashboard con estadísticas
+- Registro y seguimiento de robots aspersores asignados a la finca
+- Control de tanques de herbicida e inventario
+- Monitoreo de áreas/lotes con presencia de Romaza
+- Programación de jornadas de trabajo por sectores
+- Generación de reportes de aspersión y control
+- Dashboard con estadísticas de operabilidad y efectividad
 
 ## Objetivos del Proyecto
 
 **Objetivo General:**
-Desarrollar un sistema de información web integral para la gestión, control y monitoreo eficiente de robots aspersores de herbicida autónomos, optimizando los procesos agrícolas.
+Desarrollar un sistema de información web integral para la gestión, control y monitoreo eficiente de robots aspersores de herbicida autónomos enfocados en la erradicación de la maleza Romaza (*Rumex crispus*) en la Finca La Riverita, optimizando los procesos agrícolas.
 
 **Objetivos Específicos:**
-- Implementar un módulo de control de inventario y estado para los robots y tanques de herbicida.
-- Desarrollar un sistema de registro de malezas para identificar zonas críticas de intervención en los cultivos.
-- Automatizar la programación y seguimiento de jornadas de trabajo agrícola.
-- Generar reportes y métricas estadísticas en tiempo real que faciliten la toma de decisiones para la mejora continua.
+- Implementar un módulo de control de inventario y estado para los robots y tanques de herbicida operativos en la finca.
+- Desarrollar un sistema de registro por áreas/lotes para identificar zonas críticas de intervención de Romaza.
+- Automatizar la programación y seguimiento de jornadas de aspersión específicas por sectores.
+- Generar reportes y métricas estadísticas en tiempo real sobre la efectividad del control de maleza que faciliten la toma de decisiones.
 
 ## Tecnologías y Herramientas por Etapa del Ciclo de Vida
 
@@ -118,7 +118,7 @@ Aspersax_api/
 │   ├── authentication/      # Login, registro, JWT
 │   ├── robots/              # CRUD de robots
 │   ├── tanques/             # CRUD de tanques
-│   ├── malezas/             # CRUD de malezas
+│   ├── malezas/             # CRUD de áreas/lotes y Romaza
 │   ├── jornadas/            # CRUD de jornadas
 │   ├── reportes/            # Generación de reportes
 │   ├── dashboard/           # Estadísticas
@@ -147,9 +147,9 @@ Aspersax_api/
 | POST | `/api/tanques/` | Crear tanque |
 | PATCH | `/api/tanques/{id}/` | Actualizar tanque |
 | DELETE | `/api/tanques/{id}/` | Eliminar tanque |
-| GET | `/api/malezas/` | Listar malezas |
-| POST | `/api/malezas/` | Crear maleza |
-| PATCH | `/api/malezas/{id}/` | Actualizar maleza |
+| GET | `/api/malezas/` | Listar áreas/lotes |
+| POST | `/api/malezas/` | Registrar área/lote |
+| PATCH | `/api/malezas/{id}/` | Actualizar área/lote |
 | GET | `/api/jornadas/` | Listar jornadas |
 | POST | `/api/jornadas/crear/` | Crear jornada |
 | PATCH | `/api/jornadas/{id}/actualizar/` | Actualizar jornada |

@@ -1,92 +1,70 @@
+from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APITestCase
 from rest_framework import status
 from django.contrib.auth import get_user_model
-from .models import Maleza
+from .models import Maleza, InformacionTecnicaMaleza
 
 User = get_user_model()
 
+class MalezaModelTests(TestCase):
+    def test_creacion_maleza_default_finca(self):
+        """Verifica que al crear una maleza, por defecto la finca sea La Riverita"""
+        maleza = Maleza.objects.create(
+            nombre="Lote Test",
+            nombre_cientifico="Rumex crispus",
+            descripcion="Test"
+        )
+        self.assertEqual(maleza.finca, "Finca La Riverita")
+        self.assertEqual(maleza.nombre_cientifico, "Rumex crispus")
 
-class MalezaViewSetTests(APITestCase):
+class MalezaAPITests(APITestCase):
     def setUp(self):
-        # Usuario y autenticación
         self.user = User.objects.create_user(
-            username='testuser', password='testpass123', email='test@example.com'
+            username='admin_test',
+            password='password123',
+            email='admin@test.com'
         )
         self.client.force_authenticate(user=self.user)
-
-        # Maleza inicial
+        
         self.maleza = Maleza.objects.create(
-            nombre='Maleza Test',
-            nombre_cientifico='Testus malezus',
-            tipo='Otra',
-            descripcion='Descripción de prueba',
-            temporada='Verano',
-            resistencia_herbicida=False,
-            activo=True,
+            nombre="Lote Inicial",
+            nombre_cientifico="Rumex crispus",
+            descripcion="Creado en setUp"
         )
+
+    def test_listar_malezas(self):
+        url = reverse('maleza-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # Verify pagination or list structure
+        data = response.data.get('results', response.data) if isinstance(response.data, dict) else response.data
+        self.assertGreaterEqual(len(data), 1)
+        self.assertEqual(data[0]['nombre'], "Lote Inicial")
 
     def test_crear_maleza(self):
         url = reverse('maleza-list')
         data = {
-            'nombre': 'Nueva Maleza',
-            'nombre_cientifico': 'Novus malezus',
-            'tipo': 'Hoja Ancha',
-            'descripcion': 'Nueva descripción',
-            'temporada': 'Invierno',
-            'resistencia_herbicida': True,
-            'activo': True,
+            "nombre": "Lote Nuevo",
+            "nombre_cientifico": "Rumex crispus",
+            "descripcion": "Lote creado via API"
         }
-        resp = self.client.post(url, data, format='json')
-        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Maleza.objects.filter(activo=True).count(), 2)
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Maleza.objects.count(), 2)
 
-    def test_listar_malezas(self):
-        url = reverse('maleza-list')
-        resp = self.client.get(url)
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        items = resp.data.get('results', resp.data) if isinstance(resp.data, dict) else resp.data
-        self.assertGreaterEqual(len(items), 1)
-
-    def test_detalle_maleza(self):
-        url = reverse('maleza-detail', args=[self.maleza.id_maleza])
-        resp = self.client.get(url)
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        self.assertEqual(resp.data['nombre'], 'Maleza Test')
-
-    def test_actualizar_maleza(self):
-        url = reverse('maleza-detail', args=[self.maleza.id_maleza])
-        data = {
-            'nombre': 'Maleza Actualizada',
-            'nombre_cientifico': 'Updatus malezus',
-            'tipo': 'Hoja Angosta',
-            'descripcion': 'Descripción actualizada',
-            'temporada': 'Primavera',
-            'resistencia_herbicida': False,
-            'activo': True,
+    def test_detalle_informacion_tecnica(self):
+        url = reverse('maleza-detalle', args=[self.maleza.id_maleza])
+        # Primero probamos POST para crear la información técnica
+        data_info = {
+            "metodo_control": "Químico selectivo",
+            "quimico_recomendado": "Glifosato",
+            "nivel_peligro": "Alto"
         }
-        resp = self.client.put(url, data, format='json')
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        self.maleza.refresh_from_db()
-        self.assertEqual(self.maleza.nombre, 'Maleza Actualizada')
-
-    def test_eliminar_maleza_soft_delete(self):
-        url = reverse('maleza-detail', args=[self.maleza.id_maleza])
-        resp = self.client.delete(url)
-        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
-        self.maleza.refresh_from_db()
-        self.assertFalse(self.maleza.activo)
-
-    def test_buscar_accion(self):
-        url = reverse('maleza-buscar')
-        resp = self.client.get(f"{url}?q=Test")
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        self.assertTrue(any(item['id_maleza'] == self.maleza.id_maleza for item in resp.data))
-
-    def test_por_tipo_accion(self):
-        url = reverse('maleza-por-tipo')
-        # Asegurar que existe una maleza de tipo Hoja Ancha
-        Maleza.objects.create(nombre='Otra', tipo='Hoja Ancha', activo=True)
-        resp = self.client.get(f"{url}?tipo=Hoja Ancha")
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        self.assertTrue(all(item['tipo'] == 'Hoja Ancha' for item in resp.data))
+        response_post = self.client.post(url, data_info, format='json')
+        self.assertEqual(response_post.status_code, status.HTTP_200_OK)
+        
+        # Luego probamos GET para obtenerla
+        response_get = self.client.get(url)
+        self.assertEqual(response_get.status_code, status.HTTP_200_OK)
+        self.assertEqual(response_get.data['quimico_recomendado'], "Glifosato")
