@@ -167,7 +167,7 @@ const EmailDialog: React.FC<EmailDialogProps> = ({
                 gap: 2
             }}>
                 <EmailIcon color="primary" />
-                <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                <Typography component="div" variant="h6" sx={{ fontWeight: 600 }}>
                     Enviar Reporte por Email
                 </Typography>
             </DialogTitle>

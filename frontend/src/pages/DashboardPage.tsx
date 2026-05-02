@@ -192,7 +192,9 @@ const DashboardPage: React.FC = () => {
                 ]);
                 
                 if (statsRes.data) setStats(statsRes.data);
-                if (robotsRes.data) setRobots(robotsRes.data);
+                if (robotsRes.data) {
+                    setRobots(Array.isArray(robotsRes.data) ? robotsRes.data : robotsRes.data.results || []);
+                }
                 if (activityRes.data) console.log('Actividad cargada:', activityRes.data);
                 
                 setTanques(mockDataService.getTanques());

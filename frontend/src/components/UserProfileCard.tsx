@@ -198,6 +198,7 @@ const UserProfileCard: React.FC = () => {
                                     size="small"
                                 />
                             }
+                            secondaryTypographyProps={{ component: 'div' } as any}
                         />
                     </ListItem>
                 </List>
