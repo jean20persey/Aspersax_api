@@ -38,17 +38,15 @@ import {
 import { usePermissions } from '../hooks/usePermissions';
 import ProtectedComponent from '../components/ProtectedComponent';
 import { ConditionalButton, ConditionalIconButton } from '../components/ConditionalButton';
-import { robotsService } from '../services/api';
+import robotsService from '../services/robotsService';
 
 interface Robot {
-    id: number;
+    id_robot: number;
     nombre: string;
-    modelo: string;
-    estado: 'En Operación' | 'Mantenimiento' | 'Inactivo';
+    estado: 'Disponible' | 'En Mantenimiento' | 'En Operación' | 'Fuera de Servicio';
     bateria: number;
-    ubicacion_x: number;
-    ubicacion_y: number;
-    fecha_ultimo_mantenimiento: string;
+    ultima_actividad: string;
+    activo: boolean;
 }
 
 const RobotsPageEnhanced: React.FC = () => {
@@ -70,7 +68,7 @@ const RobotsPageEnhanced: React.FC = () => {
     const cargarRobots = async () => {
         try {
             const response = await robotsService.getAll();
-            setRobots(response.data || []);
+            setRobots(response.data.results || []);
         } catch (error) {
             console.error('Error al cargar robots:', error);
         } finally {
@@ -87,8 +85,9 @@ const RobotsPageEnhanced: React.FC = () => {
     const getEstadoColor = (estado: string) => {
         switch (estado) {
             case 'En Operación': return 'success';
-            case 'Mantenimiento': return 'warning';
-            case 'Inactivo': return 'error';
+            case 'En Mantenimiento': return 'warning';
+            case 'Fuera de Servicio': return 'error';
+            case 'Disponible': return 'info';
             default: return 'default';
         }
     };
@@ -208,7 +207,7 @@ const RobotsPageEnhanced: React.FC = () => {
 
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
                 {robots.map((robot) => (
-                    <Box key={`robot-${robot.id}`} sx={{ flex: '1 1 300px', minWidth: '300px', maxWidth: '400px' }}>
+                    <Box key={`robot-${robot.id_robot}`} sx={{ flex: '1 1 300px', minWidth: '300px', maxWidth: '400px' }}>
                         <Card sx={{ 
                             height: '100%',
                             border: robot.estado === 'En Operación' ? '2px solid #4caf50' : '1px solid #e0e0e0',
@@ -227,7 +226,7 @@ const RobotsPageEnhanced: React.FC = () => {
                                         </Typography>
                                         <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
                                             <SpeedIcon sx={{ mr: 0.5, fontSize: '1rem' }} />
-                                            {robot.modelo}
+                                            ID: {robot.id_robot}
                                         </Typography>
                                     </Box>
                                     <RobotIcon 
@@ -260,19 +259,6 @@ const RobotsPageEnhanced: React.FC = () => {
                                     />
                                 </Box>
 
-                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, p: 1, bgcolor: 'grey.50', borderRadius: 1 }}>
-                                    <LocationIcon fontSize="small" color="primary" sx={{ mr: 1 }} />
-                                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                                        Posición: ({robot.ubicacion_x}, {robot.ubicacion_y})
-                                    </Typography>
-                                </Box>
-
-                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, p: 1, bgcolor: 'grey.50', borderRadius: 1 }}>
-                                    <TimelineIcon fontSize="small" color="info" sx={{ mr: 1 }} />
-                                    <Typography variant="caption" sx={{ fontWeight: 500 }}>
-                                        Último mantenimiento: {new Date(robot.fecha_ultimo_mantenimiento).toLocaleDateString('es-ES')}
-                                    </Typography>
-                                </Box>
 
                                 <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
                                     {/* Botón de ver - todos pueden verlo */}
@@ -368,23 +354,12 @@ const RobotsPageEnhanced: React.FC = () => {
                                 defaultValue={selectedRobot?.estado}
                                 label="Estado"
                             >
+                                <MenuItem value="Disponible">Disponible</MenuItem>
+                                <MenuItem value="En Mantenimiento">En Mantenimiento</MenuItem>
                                 <MenuItem value="En Operación">En Operación</MenuItem>
-                                <MenuItem value="Mantenimiento">Mantenimiento</MenuItem>
-                                <MenuItem value="Inactivo">Inactivo</MenuItem>
+                                <MenuItem value="Fuera de Servicio">Fuera de Servicio</MenuItem>
                             </Select>
                         </FormControl>
-                        <TextField
-                            label="Ubicación X"
-                            type="number"
-                            defaultValue={selectedRobot?.ubicacion_x}
-                            fullWidth
-                        />
-                        <TextField
-                            label="Ubicación Y"
-                            type="number"
-                            defaultValue={selectedRobot?.ubicacion_y}
-                            fullWidth
-                        />
                     </Box>
                 </DialogContent>
                 <DialogActions>

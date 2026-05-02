@@ -44,3 +44,16 @@ class MalezaDetectada(models.Model):
         db_table = 'T005MalezaDetectada'
         verbose_name = 'Maleza Detectada'
         verbose_name_plural = 'Malezas Detectadas'
+
+class InformacionTecnicaMaleza(models.Model):
+    id = models.AutoField(primary_key=True, db_column='T007IdInfo')
+    maleza = models.OneToOneField(Maleza, on_delete=models.CASCADE, related_name='informacion_tecnica', db_column='T007IdMaleza')
+    imagen_url = models.URLField(max_length=500, blank=True, null=True, db_column='T007ImagenUrl')
+    metodo_control = models.TextField(blank=True, null=True, db_column='T007MetodoControl')
+    quimico_recomendado = models.CharField(max_length=200, blank=True, null=True, db_column='T007QuimicoRecomendado')
+    nivel_peligro = models.CharField(max_length=20, choices=[('Bajo', 'Bajo'), ('Medio', 'Medio'), ('Alto', 'Alto')], default='Bajo', db_column='T007NivelPeligro')
+
+    class Meta:
+        db_table = 'T007InformacionTecnica'
+        verbose_name = 'Información Técnica de Maleza'
+        verbose_name_plural = 'Informaciones Técnicas de Malezas'

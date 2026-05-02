@@ -3,8 +3,7 @@ import {
   Alert,
   Snackbar,
 } from '@mui/material';
-import robotsService from '../services/robotsService';
-import mockDataService, { Robot } from '../services/mockDataService';
+import { robotsService, Robot } from '../services/api';
 import RobotForm, { RobotFormData } from '../components/RobotForm';
 
 const RobotsPage: React.FC = () => {
@@ -19,30 +18,21 @@ const RobotsPage: React.FC = () => {
 
   const fetchRobots = async () => {
     try {
-      console.log('Intentando cargar robots...');
-      
-      // Primero cargar datos mock para asegurar que siempre hay datos
-      const robotsMock = mockDataService.getRobots();
-      setRobots(robotsMock);
-      
-      // Intentar cargar datos de la API
       const response = await robotsService.getAll();
-      console.log('Respuesta del servidor:', response);
-      
-      // Si la API responde correctamente, usar esos datos
-      if (response && response.data && Array.isArray(response.data)) {
-        const robotsData = response.data.map((robot: any) => ({
-          ...robot,
-          estado: robot.estado as Robot['estado']
-        }));
-        setRobots(robotsData);
-        console.log('Datos de API cargados exitosamente');
-      } else {
-        console.log('Usando datos mock - respuesta de API inválida');
+      // La API puede devolver un array directo o paginado con .results
+      const data = response.data;
+      if (Array.isArray(data)) {
+        setRobots(data);
+      } else if (data && (data as any).results) {
+        setRobots((data as any).results);
       }
     } catch (error) {
       console.error('Error al cargar los robots:', error);
-      // Los datos mock ya están cargados, no mostrar alerta
+      setAlert({
+        open: true,
+        message: 'Error al cargar los robots del servidor',
+        severity: 'error'
+      });
     }
   };
 
@@ -50,32 +40,19 @@ const RobotsPage: React.FC = () => {
     fetchRobots();
   }, []);
 
-  const handleAddRobot = (robotData: RobotFormData) => {
+  const handleAddRobot = async (robotData: RobotFormData) => {
     try {
       if (editingRobot) {
-        // Editar robot existente
-        const updatedRobot = mockDataService.updateRobot(editingRobot.id_robot, robotData);
-        if (updatedRobot) {
-          setAlert({
-            open: true,
-            message: 'Robot actualizado exitosamente',
-            severity: 'success'
-          });
-        } else {
-          throw new Error('No se pudo actualizar el robot');
-        }
-      } else {
-        // Agregar nuevo robot
-        const newRobot = mockDataService.addRobot({
-          ...robotData,
-          activo: true,
-          ultima_actividad: new Date().toISOString(),
-          ubicacion: 'Estación de Carga',
-          modelo: 'Modelo Estándar'
+        // Editar robot existente via API
+        await robotsService.update(editingRobot.id_robot, robotData);
+        setAlert({
+          open: true,
+          message: 'Robot actualizado exitosamente',
+          severity: 'success'
         });
-        
-        console.log('Robot agregado:', newRobot);
-        
+      } else {
+        // Crear nuevo robot via API
+        await robotsService.create(robotData);
         setAlert({
           open: true,
           message: 'Robot agregado exitosamente',
@@ -85,12 +62,15 @@ const RobotsPage: React.FC = () => {
       
       setOpenForm(false);
       setEditingRobot(null);
-      fetchRobots();
-    } catch (error) {
+      fetchRobots(); // Recargar desde el servidor
+    } catch (error: any) {
       console.error('Error al procesar el robot:', error);
+      const errorMsg = error.response?.data 
+        ? JSON.stringify(error.response.data) 
+        : (editingRobot ? 'Error al actualizar el robot' : 'Error al agregar el robot');
       setAlert({
         open: true,
-        message: editingRobot ? 'Error al actualizar el robot' : 'Error al agregar el robot',
+        message: errorMsg,
         severity: 'error'
       });
     }
@@ -101,21 +81,17 @@ const RobotsPage: React.FC = () => {
     setOpenForm(true);
   };
 
-  const handleDeleteRobot = (robotId: number) => {
+  const handleDeleteRobot = async (robotId: number) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar este robot?')) {
       try {
-        const success = mockDataService.deleteRobot(robotId);
-        if (success) {
-          setAlert({
-            open: true,
-            message: 'Robot eliminado exitosamente',
-            severity: 'success'
-          });
-          fetchRobots();
-        } else {
-          throw new Error('No se pudo eliminar el robot');
-        }
-      } catch (error) {
+        await robotsService.delete(robotId);
+        setAlert({
+          open: true,
+          message: 'Robot eliminado exitosamente',
+          severity: 'success'
+        });
+        fetchRobots();
+      } catch (error: any) {
         console.error('Error al eliminar el robot:', error);
         setAlert({
           open: true,
@@ -251,7 +227,7 @@ const RobotsPage: React.FC = () => {
         onSubmit={handleAddRobot}
         initialData={editingRobot ? {
           nombre: editingRobot.nombre,
-          estado: editingRobot.estado,
+          estado: editingRobot.estado as any,
           bateria: editingRobot.bateria
         } : undefined}
         isEditing={!!editingRobot}
@@ -274,4 +250,4 @@ const RobotsPage: React.FC = () => {
   );
 };
 
-export default RobotsPage; 
+export default RobotsPage;

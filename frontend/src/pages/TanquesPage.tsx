@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Snackbar } from '@mui/material';
-import mockDataService, { Tanque } from '../services/mockDataService';
+import { tanquesService, Tanque } from '../services/api';
 import TanqueForm, { TanqueFormData } from '../components/TanqueForm';
 
 const TanquesPage: React.FC = () => {
@@ -13,41 +13,40 @@ const TanquesPage: React.FC = () => {
         severity: 'success' as 'success' | 'error' | 'warning'
     });
 
-    const fetchTanques = () => {
-        const tanquesData = mockDataService.getTanques();
-        setTanques(tanquesData);
+    const fetchTanques = async () => {
+        try {
+            const response = await tanquesService.getAll();
+            const data = response.data;
+            if (Array.isArray(data)) {
+                setTanques(data);
+            } else if (data && (data as any).results) {
+                setTanques((data as any).results);
+            }
+        } catch (error) {
+            console.error('Error al cargar los tanques:', error);
+            setAlert({
+                open: true,
+                message: 'Error al cargar los tanques del servidor',
+                severity: 'error'
+            });
+        }
     };
 
     useEffect(() => {
         fetchTanques();
     }, []);
 
-    const handleAddTanque = (tanqueData: TanqueFormData) => {
+    const handleAddTanque = async (tanqueData: TanqueFormData) => {
         try {
             if (editingTanque) {
-                // Editar tanque existente
-                const updatedTanque = mockDataService.updateTanque(editingTanque.id_tanque, {
-                    ...tanqueData,
-                    activo: true
+                await tanquesService.update(editingTanque.id_tanque, tanqueData);
+                setAlert({
+                    open: true,
+                    message: 'Tanque actualizado exitosamente',
+                    severity: 'success'
                 });
-                if (updatedTanque) {
-                    setAlert({
-                        open: true,
-                        message: 'Tanque actualizado exitosamente',
-                        severity: 'success'
-                    });
-                } else {
-                    throw new Error('No se pudo actualizar el tanque');
-                }
             } else {
-                // Agregar nuevo tanque
-                const newTanque = mockDataService.addTanque({
-                    ...tanqueData,
-                    activo: true
-                });
-                
-                console.log('Tanque agregado:', newTanque);
-                
+                await tanquesService.create(tanqueData);
                 setAlert({
                     open: true,
                     message: 'Tanque agregado exitosamente',
@@ -58,11 +57,14 @@ const TanquesPage: React.FC = () => {
             setOpenForm(false);
             setEditingTanque(null);
             fetchTanques();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error al procesar el tanque:', error);
+            const errorMsg = error.response?.data 
+                ? JSON.stringify(error.response.data) 
+                : (editingTanque ? 'Error al actualizar el tanque' : 'Error al agregar el tanque');
             setAlert({
                 open: true,
-                message: editingTanque ? 'Error al actualizar el tanque' : 'Error al agregar el tanque',
+                message: errorMsg,
                 severity: 'error'
             });
         }
@@ -73,20 +75,16 @@ const TanquesPage: React.FC = () => {
         setOpenForm(true);
     };
 
-    const handleDeleteTanque = (tanqueId: number) => {
+    const handleDeleteTanque = async (tanqueId: number) => {
         if (window.confirm('¿Estás seguro de que quieres eliminar este tanque?')) {
             try {
-                const success = mockDataService.deleteTanque(tanqueId);
-                if (success) {
-                    setAlert({
-                        open: true,
-                        message: 'Tanque eliminado exitosamente',
-                        severity: 'success'
-                    });
-                    fetchTanques();
-                } else {
-                    throw new Error('No se pudo eliminar el tanque');
-                }
+                await tanquesService.delete(tanqueId);
+                setAlert({
+                    open: true,
+                    message: 'Tanque eliminado exitosamente',
+                    severity: 'success'
+                });
+                fetchTanques();
             } catch (error) {
                 console.error('Error al eliminar el tanque:', error);
                 setAlert({
@@ -159,8 +157,7 @@ const TanquesPage: React.FC = () => {
                                 <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Capacidad</th>
                                 <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Nivel Actual</th>
                                 <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Estado</th>
-                                <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Tipo Herbicida</th>
-                                <th style={{ padding: '16px', textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#374151', fontWeight: '600' }}>Última Recarga</th>
+                                <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Última Recarga</th>
                                 <th style={{ padding: '16px', textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#374151', fontWeight: '600' }}>Acciones</th>
                             </tr>
                         </thead>
@@ -190,7 +187,6 @@ const TanquesPage: React.FC = () => {
                                             {tanque.estado}
                                         </span>
                                     </td>
-                                    <td style={{ padding: '16px', color: '#374151' }}>{tanque.tipo_herbicida}</td>
                                     <td style={{ padding: '16px', color: '#6b7280' }}>
                                         {new Date(tanque.ultima_recarga).toLocaleString()}
                                     </td>
@@ -244,7 +240,6 @@ const TanquesPage: React.FC = () => {
                     nombre: editingTanque.nombre,
                     capacidad: editingTanque.capacidad,
                     nivel_actual: editingTanque.nivel_actual,
-                    tipo_herbicida: editingTanque.tipo_herbicida
                 } : undefined}
                 isEditing={!!editingTanque}
             />
@@ -266,4 +261,4 @@ const TanquesPage: React.FC = () => {
     );
 };
 
-export default TanquesPage; 
+export default TanquesPage;

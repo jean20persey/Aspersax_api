@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Alert, Snackbar } from '@mui/material';
-import mockDataService, { Maleza } from '../services/mockDataService';
+import { malezasService, Maleza } from '../services/api';
 import MalezaForm, { MalezaFormData } from '../components/MalezaForm';
 
 const MalezasPage: React.FC = () => {
@@ -13,35 +13,40 @@ const MalezasPage: React.FC = () => {
         severity: 'success' as 'success' | 'error' | 'warning'
     });
 
-    const fetchMalezas = () => {
-        const malezasData = mockDataService.getMalezas();
-        setMalezas(malezasData);
+    const fetchMalezas = async () => {
+        try {
+            const response = await malezasService.getAll();
+            const data = response.data;
+            if (Array.isArray(data)) {
+                setMalezas(data);
+            } else if (data && (data as any).results) {
+                setMalezas((data as any).results);
+            }
+        } catch (error) {
+            console.error('Error al cargar las malezas:', error);
+            setAlert({
+                open: true,
+                message: 'Error al cargar las malezas del servidor',
+                severity: 'error'
+            });
+        }
     };
 
     useEffect(() => {
         fetchMalezas();
     }, []);
 
-    const handleAddMaleza = (malezaData: MalezaFormData) => {
+    const handleAddMaleza = async (malezaData: MalezaFormData) => {
         try {
             if (editingMaleza) {
-                // Editar maleza existente
-                const updatedMaleza = mockDataService.updateMaleza(editingMaleza.id_maleza, malezaData);
-                if (updatedMaleza) {
-                    setAlert({
-                        open: true,
-                        message: 'Maleza actualizada exitosamente',
-                        severity: 'success'
-                    });
-                } else {
-                    throw new Error('No se pudo actualizar la maleza');
-                }
+                await malezasService.update(editingMaleza.id_maleza, malezaData);
+                setAlert({
+                    open: true,
+                    message: 'Maleza actualizada exitosamente',
+                    severity: 'success'
+                });
             } else {
-                // Agregar nueva maleza
-                const newMaleza = mockDataService.addMaleza(malezaData);
-                
-                console.log('Maleza agregada:', newMaleza);
-                
+                await malezasService.create(malezaData);
                 setAlert({
                     open: true,
                     message: 'Maleza agregada exitosamente',
@@ -52,11 +57,14 @@ const MalezasPage: React.FC = () => {
             setOpenForm(false);
             setEditingMaleza(null);
             fetchMalezas();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error al procesar la maleza:', error);
+            const errorMsg = error.response?.data 
+                ? JSON.stringify(error.response.data) 
+                : (editingMaleza ? 'Error al actualizar la maleza' : 'Error al agregar la maleza');
             setAlert({
                 open: true,
-                message: editingMaleza ? 'Error al actualizar la maleza' : 'Error al agregar la maleza',
+                message: errorMsg,
                 severity: 'error'
             });
         }
@@ -67,20 +75,16 @@ const MalezasPage: React.FC = () => {
         setOpenForm(true);
     };
 
-    const handleDeleteMaleza = (malezaId: number) => {
+    const handleDeleteMaleza = async (malezaId: number) => {
         if (window.confirm('¿Estás seguro de que quieres eliminar esta maleza?')) {
             try {
-                const success = mockDataService.deleteMaleza(malezaId);
-                if (success) {
-                    setAlert({
-                        open: true,
-                        message: 'Maleza eliminada exitosamente',
-                        severity: 'success'
-                    });
-                    fetchMalezas();
-                } else {
-                    throw new Error('No se pudo eliminar la maleza');
-                }
+                await malezasService.delete(malezaId);
+                setAlert({
+                    open: true,
+                    message: 'Maleza eliminada exitosamente',
+                    severity: 'success'
+                });
+                fetchMalezas();
             } catch (error) {
                 console.error('Error al eliminar la maleza:', error);
                 setAlert({
@@ -92,27 +96,16 @@ const MalezasPage: React.FC = () => {
         }
     };
 
-    const getNivelInfestacionColor = (nivel: string) => {
-        switch (nivel) {
-            case 'Alto':
-                return '#ef4444';
-            case 'Medio':
-                return '#f59e0b';
-            case 'Bajo':
+    const getTipoColor = (tipo: string) => {
+        switch (tipo) {
+            case 'Hoja Ancha':
                 return '#22c55e';
-            default:
-                return '#6b7280';
-        }
-    };
-
-    const getEstadoColor = (estado: string) => {
-        switch (estado) {
-            case 'Eliminada':
-                return '#22c55e';
-            case 'Tratada':
+            case 'Hoja Angosta':
                 return '#3b82f6';
-            case 'Detectada':
+            case 'Gramínea':
                 return '#f59e0b';
+            case 'Otra':
+                return '#6b7280';
             default:
                 return '#6b7280';
         }
@@ -160,12 +153,11 @@ const MalezasPage: React.FC = () => {
                         <thead>
                             <tr style={{ backgroundColor: '#f8fafc' }}>
                                 <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>ID</th>
+                                <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Nombre</th>
+                                <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Nombre Científico</th>
                                 <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Tipo</th>
-                                <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Ubicación (X, Y)</th>
-                                <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Fecha Detección</th>
-                                <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Estado</th>
-                                <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Robot Detector</th>
-                                <th style={{ padding: '16px', textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#374151', fontWeight: '600' }}>Nivel Infestación</th>
+                                <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Temporada</th>
+                                <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Resistencia Herbicida</th>
                                 <th style={{ padding: '16px', textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#374151', fontWeight: '600' }}>Acciones</th>
                             </tr>
                         </thead>
@@ -178,10 +170,9 @@ const MalezasPage: React.FC = () => {
                                     }}
                                 >
                                     <td style={{ padding: '16px', color: '#374151' }}>{maleza.id_maleza}</td>
-                                    <td style={{ padding: '16px', color: '#374151', fontWeight: '500' }}>{maleza.tipo}</td>
-                                    <td style={{ padding: '16px', color: '#6b7280' }}>({maleza.ubicacion_x}, {maleza.ubicacion_y})</td>
-                                    <td style={{ padding: '16px', color: '#374151' }}>
-                                        {new Date(maleza.fecha_deteccion).toLocaleDateString('es-ES')}
+                                    <td style={{ padding: '16px', color: '#374151', fontWeight: '500' }}>{maleza.nombre}</td>
+                                    <td style={{ padding: '16px', color: '#6b7280', fontStyle: 'italic' }}>
+                                        {maleza.nombre_cientifico || '—'}
                                     </td>
                                     <td style={{ padding: '16px' }}>
                                         <span style={{
@@ -189,23 +180,25 @@ const MalezasPage: React.FC = () => {
                                             borderRadius: '16px',
                                             fontSize: '12px',
                                             fontWeight: '500',
-                                            backgroundColor: `${getEstadoColor(maleza.estado)}20`,
-                                            color: getEstadoColor(maleza.estado)
+                                            backgroundColor: `${getTipoColor(maleza.tipo)}20`,
+                                            color: getTipoColor(maleza.tipo)
                                         }}>
-                                            {maleza.estado}
+                                            {maleza.tipo}
                                         </span>
                                     </td>
-                                    <td style={{ padding: '16px', color: '#374151' }}>{maleza.robot_detector}</td>
+                                    <td style={{ padding: '16px', color: '#374151' }}>
+                                        {maleza.temporada || '—'}
+                                    </td>
                                     <td style={{ padding: '16px' }}>
                                         <span style={{
                                             padding: '4px 12px',
                                             borderRadius: '16px',
                                             fontSize: '12px',
                                             fontWeight: '500',
-                                            backgroundColor: `${getNivelInfestacionColor(maleza.nivel_infestacion)}20`,
-                                            color: getNivelInfestacionColor(maleza.nivel_infestacion)
+                                            backgroundColor: maleza.resistencia_herbicida ? '#ef444420' : '#22c55e20',
+                                            color: maleza.resistencia_herbicida ? '#ef4444' : '#22c55e'
                                         }}>
-                                            {maleza.nivel_infestacion}
+                                            {maleza.resistencia_herbicida ? 'Sí' : 'No'}
                                         </span>
                                     </td>
                                     <td style={{ padding: '16px' }}>
@@ -255,13 +248,12 @@ const MalezasPage: React.FC = () => {
                 }}
                 onSubmit={handleAddMaleza}
                 initialData={editingMaleza ? {
+                    nombre: editingMaleza.nombre,
+                    nombre_cientifico: editingMaleza.nombre_cientifico || '',
                     tipo: editingMaleza.tipo,
-                    ubicacion_x: editingMaleza.ubicacion_x,
-                    ubicacion_y: editingMaleza.ubicacion_y,
-                    fecha_deteccion: editingMaleza.fecha_deteccion,
-                    estado: editingMaleza.estado,
-                    robot_detector: editingMaleza.robot_detector,
-                    nivel_infestacion: editingMaleza.nivel_infestacion
+                    descripcion: editingMaleza.descripcion || '',
+                    temporada: editingMaleza.temporada || '',
+                    resistencia_herbicida: editingMaleza.resistencia_herbicida,
                 } : undefined}
                 isEditing={!!editingMaleza}
             />
@@ -283,4 +275,4 @@ const MalezasPage: React.FC = () => {
     );
 };
 
-export default MalezasPage; 
+export default MalezasPage;

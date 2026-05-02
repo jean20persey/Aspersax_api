@@ -4,8 +4,8 @@ from rest_framework import generics, status, viewsets
 from rest_framework.decorators import action
 from django.db.models import Q
 from rest_framework.exceptions import NotFound, ValidationError
-from .models import Maleza, MalezaDetectada
-from .serializers import MalezaSerializer, MalezaDetectadaSerializer
+from .models import Maleza, MalezaDetectada, InformacionTecnicaMaleza
+from .serializers import MalezaSerializer, MalezaDetectadaSerializer, InformacionTecnicaMalezaSerializer
 from rest_framework.permissions import IsAuthenticated
 
 
@@ -108,6 +108,25 @@ class MalezaViewSet(viewsets.ModelViewSet):
         
         serializer = self.get_serializer(malezas, many=True)
         return Response(serializer.data)
+
+    @action(detail=True, methods=['get', 'post'])
+    def detalle(self, request, pk=None):
+        maleza = self.get_object()
+        if request.method == 'GET':
+            try:
+                info = maleza.informacion_tecnica
+                serializer = InformacionTecnicaMalezaSerializer(info)
+                return Response(serializer.data)
+            except:
+                return Response({'detail': 'No hay información técnica para esta maleza'}, status=status.HTTP_404_NOT_FOUND)
+        
+        elif request.method == 'POST':
+            info, created = InformacionTecnicaMaleza.objects.get_or_create(maleza=maleza)
+            serializer = InformacionTecnicaMalezaSerializer(info, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['get'])
     def por_tipo(self, request):

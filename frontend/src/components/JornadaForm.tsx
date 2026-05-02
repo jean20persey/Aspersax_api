@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent } from 'react';
+import React, { useState, useEffect, ChangeEvent } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -13,7 +13,7 @@ import {
   Box,
   SelectChangeEvent,
 } from '@mui/material';
-import mockDataService from '../services/mockDataService';
+import { robotsService, tanquesService, Robot, Tanque } from '../services/api';
 
 interface JornadaFormProps {
   open: boolean;
@@ -25,63 +25,96 @@ interface JornadaFormProps {
 
 export interface JornadaFormData {
   fecha: string;
-  robot_id: number;
-  robot_nombre: string;
-  area_cubierta: number;
-  malezas_detectadas: number;
-  herbicida_usado: number;
-  duracion: number;
-  estado: 'Completada' | 'En Progreso' | 'Pausada' | 'Programada' | 'Cancelada';
+  hora_inicio: string;
+  hora_fin: string;
+  duracion: string; // "HH:MM:SS"
+  area_tratada: number;
+  robot: number; // FK id
+  tanque: number; // FK id
 }
 
 const JornadaForm: React.FC<JornadaFormProps> = ({ open, onClose, onSubmit, initialData, isEditing }) => {
   const [formData, setFormData] = useState<JornadaFormData>({
     fecha: new Date().toISOString().split('T')[0],
-    robot_id: 0,
-    robot_nombre: '',
-    area_cubierta: 0,
-    malezas_detectadas: 0,
-    herbicida_usado: 0,
-    duracion: 0,
-    estado: 'Programada',
+    hora_inicio: '08:00',
+    hora_fin: '12:00',
+    duracion: '04:00:00',
+    area_tratada: 0,
+    robot: 0,
+    tanque: 0,
   });
 
-  React.useEffect(() => {
+  const [robots, setRobots] = useState<Robot[]>([]);
+  const [tanques, setTanques] = useState<Tanque[]>([]);
+
+  useEffect(() => {
+    if (open) {
+      // Cargar robots y tanques desde la API
+      robotsService.getAll().then(res => {
+        const data = res.data;
+        if (Array.isArray(data)) {
+          setRobots(data);
+        } else if (data && (data as any).results) {
+          setRobots((data as any).results);
+        }
+      }).catch(err => console.error('Error cargando robots:', err));
+
+      tanquesService.getAll().then(res => {
+        const data = res.data;
+        if (Array.isArray(data)) {
+          setTanques(data);
+        } else if (data && (data as any).results) {
+          setTanques((data as any).results);
+        }
+      }).catch(err => console.error('Error cargando tanques:', err));
+    }
+  }, [open]);
+
+  useEffect(() => {
     if (initialData && open) {
       setFormData(initialData);
     } else if (!isEditing && open) {
       setFormData({
         fecha: new Date().toISOString().split('T')[0],
-        robot_id: 0,
-        robot_nombre: '',
-        area_cubierta: 0,
-        malezas_detectadas: 0,
-        herbicida_usado: 0,
-        duracion: 0,
-        estado: 'Programada',
+        hora_inicio: '08:00',
+        hora_fin: '12:00',
+        duracion: '04:00:00',
+        area_tratada: 0,
+        robot: 0,
+        tanque: 0,
       });
     }
   }, [initialData, open, isEditing]);
 
-  const robots = mockDataService.getRobots();
+  // Auto-calcular duración cuando cambian hora_inicio y hora_fin
+  useEffect(() => {
+    if (formData.hora_inicio && formData.hora_fin) {
+      const [hi, mi] = formData.hora_inicio.split(':').map(Number);
+      const [hf, mf] = formData.hora_fin.split(':').map(Number);
+      const totalMinStart = hi * 60 + mi;
+      const totalMinEnd = hf * 60 + mf;
+      if (totalMinEnd > totalMinStart) {
+        const diff = totalMinEnd - totalMinStart;
+        const hours = Math.floor(diff / 60).toString().padStart(2, '0');
+        const mins = (diff % 60).toString().padStart(2, '0');
+        setFormData(prev => ({ ...prev, duracion: `${hours}:${mins}:00` }));
+      }
+    }
+  }, [formData.hora_inicio, formData.hora_fin]);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: ['robot_id', 'area_cubierta', 'malezas_detectadas', 'herbicida_usado', 'duracion'].includes(name) 
-        ? Number(value) : value
+      [name]: ['area_tratada'].includes(name) ? Number(value) : value
     }));
   };
 
   const handleSelectChange = (e: SelectChangeEvent<number>) => {
-    const selectedRobotId = Number(e.target.value);
-    const selectedRobot = robots.find(robot => robot.id_robot === selectedRobotId);
-    
+    const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      robot_id: selectedRobotId,
-      robot_nombre: selectedRobot ? selectedRobot.nombre : ''
+      [name as string]: Number(value)
     }));
   };
 
@@ -90,13 +123,12 @@ const JornadaForm: React.FC<JornadaFormProps> = ({ open, onClose, onSubmit, init
     onSubmit(formData);
     setFormData({
       fecha: new Date().toISOString().split('T')[0],
-      robot_id: 0,
-      robot_nombre: '',
-      area_cubierta: 0,
-      malezas_detectadas: 0,
-      herbicida_usado: 0,
-      duracion: 0,
-      estado: 'Programada',
+      hora_inicio: '08:00',
+      hora_fin: '12:00',
+      duracion: '04:00:00',
+      area_tratada: 0,
+      robot: 0,
+      tanque: 0,
     });
   };
 
@@ -117,11 +149,43 @@ const JornadaForm: React.FC<JornadaFormProps> = ({ open, onClose, onSubmit, init
               fullWidth
             />
             
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <TextField
+                required
+                name="hora_inicio"
+                label="Hora Inicio"
+                type="time"
+                value={formData.hora_inicio}
+                onChange={handleInputChange}
+                InputLabelProps={{ shrink: true }}
+                fullWidth
+              />
+              <TextField
+                required
+                name="hora_fin"
+                label="Hora Fin"
+                type="time"
+                value={formData.hora_fin}
+                onChange={handleInputChange}
+                InputLabelProps={{ shrink: true }}
+                fullWidth
+              />
+            </Box>
+
+            <TextField
+              name="duracion"
+              label="Duración (calculada)"
+              value={formData.duracion}
+              InputProps={{ readOnly: true }}
+              fullWidth
+              helperText="Se calcula automáticamente"
+            />
+
             <FormControl fullWidth required>
               <InputLabel>Robot</InputLabel>
               <Select
-                name="robot_id"
-                value={formData.robot_id || ''}
+                name="robot"
+                value={formData.robot || ''}
                 label="Robot"
                 onChange={handleSelectChange}
               >
@@ -136,65 +200,35 @@ const JornadaForm: React.FC<JornadaFormProps> = ({ open, onClose, onSubmit, init
               </Select>
             </FormControl>
 
-            <TextField
-              required
-              name="area_cubierta"
-              label="Área Cubierta (hectáreas)"
-              type="number"
-              value={formData.area_cubierta}
-              onChange={handleInputChange}
-              inputProps={{ min: 0, step: 0.1 }}
-              fullWidth
-            />
-
-            <TextField
-              required
-              name="malezas_detectadas"
-              label="Malezas Detectadas"
-              type="number"
-              value={formData.malezas_detectadas}
-              onChange={handleInputChange}
-              inputProps={{ min: 0 }}
-              fullWidth
-            />
-
-            <TextField
-              required
-              name="herbicida_usado"
-              label="Herbicida Usado (L)"
-              type="number"
-              value={formData.herbicida_usado}
-              onChange={handleInputChange}
-              inputProps={{ min: 0, step: 0.1 }}
-              fullWidth
-            />
-
-            <TextField
-              required
-              name="duracion"
-              label="Duración (minutos)"
-              type="number"
-              value={formData.duracion}
-              onChange={handleInputChange}
-              inputProps={{ min: 1 }}
-              fullWidth
-            />
-
             <FormControl fullWidth required>
-              <InputLabel>Estado</InputLabel>
+              <InputLabel>Tanque</InputLabel>
               <Select
-                name="estado"
-                value={formData.estado}
-                label="Estado"
-                onChange={(e) => setFormData(prev => ({ ...prev, estado: e.target.value as any }))}
+                name="tanque"
+                value={formData.tanque || ''}
+                label="Tanque"
+                onChange={handleSelectChange}
               >
-                <MenuItem value="Programada">Programada</MenuItem>
-                <MenuItem value="En Progreso">En Progreso</MenuItem>
-                <MenuItem value="Pausada">Pausada</MenuItem>
-                <MenuItem value="Completada">Completada</MenuItem>
-                <MenuItem value="Cancelada">Cancelada</MenuItem>
+                <MenuItem value="" disabled>
+                  Selecciona un tanque
+                </MenuItem>
+                {tanques.map(tanque => (
+                  <MenuItem key={tanque.id_tanque} value={tanque.id_tanque}>
+                    {tanque.nombre} ({tanque.nivel_actual}L / {tanque.capacidad}L)
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
+
+            <TextField
+              required
+              name="area_tratada"
+              label="Área Tratada (hectáreas)"
+              type="number"
+              value={formData.area_tratada}
+              onChange={handleInputChange}
+              inputProps={{ min: 0, step: 0.1 }}
+              fullWidth
+            />
           </Box>
         </DialogContent>
         <DialogActions>

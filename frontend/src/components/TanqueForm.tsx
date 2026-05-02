@@ -21,7 +21,6 @@ export interface TanqueFormData {
   nombre: string;
   capacidad: number;
   nivel_actual: number;
-  tipo_herbicida: string;
 }
 
 const TanqueForm: React.FC<TanqueFormProps> = ({ open, onClose, onSubmit, initialData, isEditing = false }) => {
@@ -29,7 +28,6 @@ const TanqueForm: React.FC<TanqueFormProps> = ({ open, onClose, onSubmit, initia
     nombre: '',
     capacidad: 0,
     nivel_actual: 0,
-    tipo_herbicida: '',
   });
 
   useEffect(() => {
@@ -40,7 +38,6 @@ const TanqueForm: React.FC<TanqueFormProps> = ({ open, onClose, onSubmit, initia
         nombre: '',
         capacidad: 0,
         nivel_actual: 0,
-        tipo_herbicida: '',
       });
     }
   }, [initialData, isEditing, open]);
@@ -60,7 +57,6 @@ const TanqueForm: React.FC<TanqueFormProps> = ({ open, onClose, onSubmit, initia
       nombre: '',
       capacidad: 1000,
       nivel_actual: 0,
-      tipo_herbicida: '',
     });
   };
 
@@ -98,16 +94,6 @@ const TanqueForm: React.FC<TanqueFormProps> = ({ open, onClose, onSubmit, initia
               value={formData.nivel_actual}
               onChange={handleInputChange}
               inputProps={{ min: 0, max: formData.capacidad }}
-              fullWidth
-            />
-
-            <TextField
-              required
-              name="tipo_herbicida"
-              label="Tipo de Herbicida"
-              value={formData.tipo_herbicida}
-              onChange={handleInputChange}
-              placeholder="Ej: Glifosato 48% SL"
               fullWidth
             />
           </Box>

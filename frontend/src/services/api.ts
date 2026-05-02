@@ -1,36 +1,70 @@
-import axios from 'axios';
+import api from './axiosConfig';
 
-const API_URL = '/api';
+// ============================================================
+// Interfaces que reflejan los modelos reales del backend Django
+// ============================================================
 
-// Interfaces
-interface CreateRobotData {
+export interface Robot {
+  id_robot: number;
   nombre: string;
-  estado: string;
+  estado: 'Disponible' | 'En Mantenimiento' | 'En Operación' | 'Fuera de Servicio';
   bateria: number;
+  ultima_actividad: string;
+  activo: boolean;
 }
 
-const api = axios.create({
-  baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+export interface Tanque {
+  id_tanque: number;
+  nombre: string;
+  capacidad: number;
+  nivel_actual: number;
+  estado: 'Lleno' | 'Medio' | 'Bajo' | 'Vacío';
+  ultima_recarga: string;
+  activo: boolean;
+}
 
-// Interceptor para manejar tokens
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+export interface Jornada {
+  id_jornada: number;
+  fecha: string;
+  hora_inicio: string;
+  hora_fin: string;
+  duracion: string; // DurationField se serializa como string "HH:MM:SS"
+  area_tratada: number;
+  robot: number; // FK id
+  tanque: number; // FK id
+  activo: boolean;
+}
 
+export interface Maleza {
+  id_maleza: number;
+  nombre: string;
+  nombre_cientifico: string | null;
+  tipo: 'Hoja Ancha' | 'Hoja Angosta' | 'Gramínea' | 'Otra';
+  descripcion: string | null;
+  temporada: string | null;
+  resistencia_herbicida: boolean;
+  activo: boolean;
+  informacion_tecnica?: {
+    id: number;
+    imagen_url: string | null;
+    metodo_control: string | null;
+    quimico_recomendado: string | null;
+    nivel_peligro: 'Bajo' | 'Medio' | 'Alto';
+  };
+}
+
+export interface MalezaDetectada {
+  id: number;
+  jornada: number;
+  maleza: number;
+  ubicacion: string;
+  densidad: string;
+  activo: boolean;
+}
+
+// ============================================================
 // Servicios de autenticación
+// ============================================================
 export const authService = {
   login: (credentials: { username: string; password: string }) =>
     api.post('/token/', credentials),
@@ -38,55 +72,90 @@ export const authService = {
     api.post('/token/refresh/', { refresh }),
 };
 
+// ============================================================
 // Servicios de robots
+// URLs backend: GET/POST '', GET '<id>/', PATCH '<id>/actualizar/', DELETE '<id>/eliminar/'
+// ============================================================
 export const robotsService = {
-  getAll: () => api.get('/robots/'),
-  getById: (id: number) => api.get(`/robots/${id}/`),
-  create: (data: CreateRobotData) => api.post('/robots/', data),
-  update: (id: number, data: Partial<CreateRobotData>) => api.put(`/robots/${id}/`, data),
-  delete: (id: number) => api.delete(`/robots/${id}/`),
+  getAll: () => api.get<Robot[]>('/robots/'),
+  getById: (id: number) => api.get<Robot>(`/robots/${id}/`),
+  create: (data: Partial<Robot>) => api.post<Robot>('/robots/crear/', data),
+  update: (id: number, data: Partial<Robot>) => api.patch<Robot>(`/robots/${id}/actualizar/`, data),
+  delete: (id: number) => api.delete(`/robots/${id}/eliminar/`),
+  getAlertas: () => api.get<Robot[]>('/robots/alertas/'),
 };
 
-// Servicios de tanques
+// ============================================================
+// Servicios de tanques (ViewSet con DefaultRouter)
+// URLs: GET/POST '', GET/PUT/PATCH/DELETE '<id>/'
+// ============================================================
 export const tanquesService = {
-  getAll: () => api.get('/tanques/'),
-  getById: (id: number) => api.get(`/tanques/${id}/`),
-  create: (data: any) => api.post('/tanques/', data),
-  update: (id: number, data: any) => api.put(`/tanques/${id}/`, data),
+  getAll: () => api.get<Tanque[]>('/tanques/'),
+  getById: (id: number) => api.get<Tanque>(`/tanques/${id}/`),
+  create: (data: Partial<Tanque>) => api.post<Tanque>('/tanques/', data),
+  update: (id: number, data: Partial<Tanque>) => api.patch<Tanque>(`/tanques/${id}/`, data),
   delete: (id: number) => api.delete(`/tanques/${id}/`),
 };
 
+// ============================================================
 // Servicios de jornadas
+// URLs: GET '', POST 'crear/', GET '<pk>/', PATCH '<id>/actualizar/', DELETE '<id>/eliminar/'
+// ============================================================
 export const jornadasService = {
-  getAll: () => api.get('/jornadas/'),
-  getById: (id: number) => api.get(`/jornadas/${id}/`),
-  create: (data: any) => api.post('/jornadas/', data),
-  update: (id: number, data: any) => api.put(`/jornadas/${id}/`, data),
-  delete: (id: number) => api.delete(`/jornadas/${id}/`),
+  getAll: () => api.get<Jornada[]>('/jornadas/'),
+  getById: (id: number) => api.get<Jornada>(`/jornadas/${id}/`),
+  create: (data: Partial<Jornada>) => api.post<Jornada>('/jornadas/crear/', data),
+  update: (id: number, data: Partial<Jornada>) => api.patch<Jornada>(`/jornadas/${id}/actualizar/`, data),
+  delete: (id: number) => api.delete(`/jornadas/${id}/eliminar/`),
+  buscarPorFecha: (fecha: string) => api.get<Jornada[]>(`/jornadas/buscar/?fecha=${fecha}`),
 };
 
-// Servicios de malezas
+// ============================================================
+// Servicios de malezas (ViewSet con DefaultRouter)
+// URLs: GET/POST '', GET/PUT/PATCH/DELETE '<id>/', detalle, buscar, por_tipo
+// ============================================================
 export const malezasService = {
-  getAll: () => api.get('/malezas/'),
-  getById: (id: number) => api.get(`/malezas/${id}/`),
-  create: (data: any) => api.post('/malezas/', data),
-  update: (id: number, data: any) => api.put(`/malezas/${id}/`, data),
+  getAll: () => api.get<Maleza[]>('/malezas/'),
+  getById: (id: number) => api.get<Maleza>(`/malezas/${id}/`),
+  create: (data: Partial<Maleza>) => api.post<Maleza>('/malezas/', data),
+  update: (id: number, data: Partial<Maleza>) => api.patch<Maleza>(`/malezas/${id}/`, data),
   delete: (id: number) => api.delete(`/malezas/${id}/`),
+  getDetalle: (id: number) => api.get(`/malezas/${id}/detalle/`),
+  updateDetalle: (id: number, data: any) => api.post(`/malezas/${id}/detalle/`, data),
+  getDetectadas: () => api.get<MalezaDetectada[]>('/malezas/detectadas/'),
+  getDetectadasPorJornada: (jornadaId: number) => api.get<MalezaDetectada[]>(`/malezas/detectadas/jornada/${jornadaId}/`),
 };
 
+// ============================================================
 // Servicios de reportes
+// ============================================================
 export const reportesService = {
   getAll: () => api.get('/reportes/'),
   getById: (id: number) => api.get(`/reportes/${id}/`),
-  generate: (data: any) => api.post('/reportes/', data),
-  export: (id: number, format: string) => api.get(`/reportes/${id}/export/?format=${format}`),
+  create: (data: any) => api.post('/reportes/', data),
+  update: (id: number, data: any) => api.patch(`/reportes/${id}/`, data),
+  exportar: (id: number) => api.get(`/reportes/${id}/exportar/`),
 };
 
+// ============================================================
+// Servicios de dashboard
+// ============================================================
+export const dashboardService = {
+  getStats: (start: string, end: string) => api.get(`/dashboard/stats/?start_date=${start}&end_date=${end}`),
+  getActivity: (start: string, end: string) => api.get(`/dashboard/activity/?start_date=${start}&end_date=${end}`),
+  getRobotsStats: () => api.get('/dashboard/robots/'),
+  getTanksStats: () => api.get('/dashboard/tanks/'),
+  getWeedsStats: () => api.get('/dashboard/weeds/'),
+};
+
+// ============================================================
 // Servicios de notificaciones
+// ============================================================
 export const notificacionesService = {
   getAll: () => api.get('/notificaciones/'),
-  markAsRead: (id: number) => api.patch(`/notificaciones/${id}/`, { leida: true }),
-  markAllAsRead: () => api.patch('/notificaciones/mark-all-read/'),
+  markAsRead: (id: number) => api.patch(`/notificaciones/${id}/marcar_leida/`),
+  markAllAsRead: () => api.post('/notificaciones/marcar_todas_leidas/'),
+  getUnreadCount: () => api.get('/notificaciones/no_leidas/'),
 };
 
 export default api;

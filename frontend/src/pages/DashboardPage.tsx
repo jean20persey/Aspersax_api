@@ -60,6 +60,8 @@ import TimelineIcon from '@mui/icons-material/Timeline';
 import WarningIcon from '@mui/icons-material/Warning';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { mockDataService } from '../services/mockDataService';
+import dashboardService from '../services/dashboardService';
+import robotsService from '../services/robotsService';
 import UserProfileCard from '../components/UserProfileCard';
 
 interface StatCardProps {
@@ -178,39 +180,29 @@ const DashboardPage: React.FC = () => {
             setLoading(true);
             setError(null);
             
-            // Cargar datos reales de todos los componentes
-            console.log('Cargando datos reales del dashboard...');
-            
             try {
-                // Usar datos mock directamente para evitar errores de API
-                const robotsData = mockDataService.getRobots();
-                const tanquesData = mockDataService.getTanques();
-                const malezasData = mockDataService.getMalezas();
-                const jornadasData = mockDataService.getJornadas();
+                // Intentar cargar datos reales de la API
+                const start = dateRange.start?.format('YYYY-MM-DD') || '';
+                const end = dateRange.end?.format('YYYY-MM-DD') || '';
+
+                const [statsRes, activityRes, robotsRes] = await Promise.all([
+                    dashboardService.getStats(start, end),
+                    dashboardService.getActivityData(start, end),
+                    robotsService.getAll()
+                ]);
                 
+                if (statsRes.data) setStats(statsRes.data);
+                if (robotsRes.data) setRobots(robotsRes.data);
+                if (activityRes.data) console.log('Actividad cargada:', activityRes.data);
                 
-                setRobots(robotsData);
-                setTanques(tanquesData);
-                setMalezas(malezasData);
-                setJornadas(jornadasData);
+                setTanques(mockDataService.getTanques());
+                setMalezas(mockDataService.getMalezas());
+                setJornadas(mockDataService.getJornadas());
                 
-                // Calcular estadísticas basadas en datos reales
-                const realStats = {
-                    robots_activos: robotsData.filter((r: any) => r.estado === 'En Operación').length,
-                    total_robots: robotsData.length,
-                    tanques_en_uso: tanquesData.filter((t: any) => t.activo).length,
-                    total_tanques: tanquesData.length,
-                    malezas_detectadas: malezasData.filter((m: any) => m.estado === 'Detectada').length,
-                    total_malezas: malezasData.length,
-                    area_cubierta: jornadasData.filter((j: any) => j.estado === 'Completada').length * 10
-                };
-                
-                setStats(realStats);
                 setLastUpdate(new Date());
-                
-                console.log('Datos reales cargados:', { robotsData, tanquesData, malezasData, jornadasData, realStats });
+                console.log('Datos reales de API cargados exitosamente');
             } catch (apiError) {
-                console.log('Error al cargar datos reales, usando fallback mock:', apiError);
+                console.log('Error de API, usando fallback mock:', apiError);
                 // Fallback a datos mock si la API falla
                 const mockStats = mockDataService.getDashboardStats();
                 setStats(mockStats);
@@ -219,27 +211,6 @@ const DashboardPage: React.FC = () => {
                 setMalezas(mockDataService.getMalezas());
                 setJornadas(mockDataService.getJornadas());
             }
-            
-            // Comentar temporalmente la llamada a la API para usar solo datos mock
-            /*
-            try {
-                // Intentar cargar datos de la API
-                const [statsResponse, activityResponse] = await Promise.all([
-                    dashboardService.getStats(),
-                    dashboardService.getActivityData()
-                ]);
-                
-                // Si la API responde correctamente, usar esos datos
-                if (statsResponse && statsResponse.data && activityResponse && activityResponse.data) {
-                    setStats(statsResponse.data);
-                    console.log('Datos de API cargados exitosamente');
-                } else {
-                    console.log('Usando datos mock calculados - respuesta de API inválida');
-                }
-            } catch (apiError) {
-                console.log('Usando datos mock calculados - Error de API:', apiError);
-            }
-            */
         } catch (err: any) {
             console.error('Error al cargar datos del dashboard:', err);
             // Fallback final con datos mock básicos

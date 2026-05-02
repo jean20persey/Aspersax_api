@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Alert, Snackbar } from '@mui/material';
-import mockDataService, { Jornada } from '../services/mockDataService';
+import { jornadasService, robotsService, tanquesService, Jornada, Robot, Tanque } from '../services/api';
 import JornadaForm, { JornadaFormData } from '../components/JornadaForm';
 
 const JornadasPage: React.FC = () => {
     const [jornadas, setJornadas] = useState<Jornada[]>([]);
+    const [robots, setRobots] = useState<Robot[]>([]);
+    const [tanques, setTanques] = useState<Tanque[]>([]);
     const [openForm, setOpenForm] = useState(false);
     const [editingJornada, setEditingJornada] = useState<Jornada | null>(null);
     const [alert, setAlert] = useState({
@@ -13,35 +15,72 @@ const JornadasPage: React.FC = () => {
         severity: 'success' as 'success' | 'error' | 'warning'
     });
 
-    const fetchJornadas = () => {
-        const jornadasData = mockDataService.getJornadas();
-        setJornadas(jornadasData);
+    const fetchJornadas = async () => {
+        try {
+            const response = await jornadasService.getAll();
+            const data = response.data;
+            if (Array.isArray(data)) {
+                setJornadas(data);
+            } else if (data && (data as any).results) {
+                setJornadas((data as any).results);
+            }
+        } catch (error) {
+            console.error('Error al cargar las jornadas:', error);
+            setAlert({
+                open: true,
+                message: 'Error al cargar las jornadas del servidor',
+                severity: 'error'
+            });
+        }
+    };
+
+    const fetchRelatedData = async () => {
+        try {
+            const [robotsRes, tanquesRes] = await Promise.all([
+                robotsService.getAll(),
+                tanquesService.getAll()
+            ]);
+            
+            const robotsData = robotsRes.data;
+            if (Array.isArray(robotsData)) setRobots(robotsData);
+            else if (robotsData && (robotsData as any).results) setRobots((robotsData as any).results);
+
+            const tanquesData = tanquesRes.data;
+            if (Array.isArray(tanquesData)) setTanques(tanquesData);
+            else if (tanquesData && (tanquesData as any).results) setTanques((tanquesData as any).results);
+        } catch (error) {
+            console.error('Error al cargar datos relacionados:', error);
+        }
     };
 
     useEffect(() => {
         fetchJornadas();
+        fetchRelatedData();
     }, []);
 
-    const handleAddJornada = (jornadaData: JornadaFormData) => {
+    // Helper para obtener el nombre del robot por su ID
+    const getRobotNombre = (robotId: number) => {
+        const robot = robots.find(r => r.id_robot === robotId);
+        return robot ? robot.nombre : `Robot #${robotId}`;
+    };
+
+    // Helper para obtener el nombre del tanque por su ID
+    const getTanqueNombre = (tanqueId: number) => {
+        const tanque = tanques.find(t => t.id_tanque === tanqueId);
+        return tanque ? tanque.nombre : `Tanque #${tanqueId}`;
+    };
+
+    const handleAddJornada = async (jornadaData: JornadaFormData) => {
         try {
             if (editingJornada) {
-                // Editar jornada existente
-                const updatedJornada = mockDataService.updateJornada(editingJornada.id_jornada, jornadaData);
-                if (updatedJornada) {
-                    setAlert({
-                        open: true,
-                        message: 'Jornada actualizada exitosamente',
-                        severity: 'success'
-                    });
-                } else {
-                    throw new Error('No se pudo actualizar la jornada');
-                }
+                await jornadasService.update(editingJornada.id_jornada, jornadaData);
+                setAlert({
+                    open: true,
+                    message: 'Jornada actualizada exitosamente',
+                    severity: 'success'
+                });
             } else {
-                // Agregar nueva jornada
-                const newJornada = mockDataService.addJornada(jornadaData);
-                
-                console.log('Jornada agregada:', newJornada);
-                
+                await jornadasService.create(jornadaData);
                 setAlert({
                     open: true,
                     message: 'Jornada agregada exitosamente',
@@ -52,11 +91,14 @@ const JornadasPage: React.FC = () => {
             setOpenForm(false);
             setEditingJornada(null);
             fetchJornadas();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error al procesar la jornada:', error);
+            const errorMsg = error.response?.data 
+                ? JSON.stringify(error.response.data) 
+                : (editingJornada ? 'Error al actualizar la jornada' : 'Error al agregar la jornada');
             setAlert({
                 open: true,
-                message: editingJornada ? 'Error al actualizar la jornada' : 'Error al agregar la jornada',
+                message: errorMsg,
                 severity: 'error'
             });
         }
@@ -67,20 +109,16 @@ const JornadasPage: React.FC = () => {
         setOpenForm(true);
     };
 
-    const handleDeleteJornada = (jornadaId: number) => {
+    const handleDeleteJornada = async (jornadaId: number) => {
         if (window.confirm('¿Estás seguro de que quieres eliminar esta jornada?')) {
             try {
-                const success = mockDataService.deleteJornada(jornadaId);
-                if (success) {
-                    setAlert({
-                        open: true,
-                        message: 'Jornada eliminada exitosamente',
-                        severity: 'success'
-                    });
-                    fetchJornadas();
-                } else {
-                    throw new Error('No se pudo eliminar la jornada');
-                }
+                await jornadasService.delete(jornadaId);
+                setAlert({
+                    open: true,
+                    message: 'Jornada eliminada exitosamente',
+                    severity: 'success'
+                });
+                fetchJornadas();
             } catch (error) {
                 console.error('Error al eliminar la jornada:', error);
                 setAlert({
@@ -89,21 +127,6 @@ const JornadasPage: React.FC = () => {
                     severity: 'error'
                 });
             }
-        }
-    };
-
-    const getEstadoColor = (estado: string) => {
-        switch (estado) {
-            case 'Completada':
-                return '#22c55e';
-            case 'En Progreso':
-                return '#3b82f6';
-            case 'Pausada':
-                return '#f59e0b';
-            case 'Cancelada':
-                return '#ef4444';
-            default:
-                return '#6b7280';
         }
     };
 
@@ -150,12 +173,12 @@ const JornadasPage: React.FC = () => {
                             <tr style={{ backgroundColor: '#f8fafc' }}>
                                 <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>ID</th>
                                 <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Fecha</th>
+                                <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Hora Inicio</th>
+                                <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Hora Fin</th>
+                                <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Duración</th>
+                                <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Área Tratada</th>
                                 <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Robot</th>
-                                <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Área Cubierta</th>
-                                <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Malezas Detectadas</th>
-                                <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Herbicida Usado</th>
-                                <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Estado</th>
-                                <th style={{ padding: '16px', textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#374151', fontWeight: '600' }}>Duración</th>
+                                <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Tanque</th>
                                 <th style={{ padding: '16px', textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#374151', fontWeight: '600' }}>Acciones</th>
                             </tr>
                         </thead>
@@ -169,23 +192,12 @@ const JornadasPage: React.FC = () => {
                                 >
                                     <td style={{ padding: '16px', color: '#374151' }}>{jornada.id_jornada}</td>
                                     <td style={{ padding: '16px', color: '#374151' }}>{jornada.fecha}</td>
-                                    <td style={{ padding: '16px', color: '#374151', fontWeight: '500' }}>{jornada.robot_nombre}</td>
-                                    <td style={{ padding: '16px', color: '#374151' }}>{jornada.area_cubierta} hectáreas</td>
-                                    <td style={{ padding: '16px', color: '#374151' }}>{jornada.malezas_detectadas}</td>
-                                    <td style={{ padding: '16px', color: '#374151' }}>{jornada.herbicida_usado} L</td>
-                                    <td style={{ padding: '16px' }}>
-                                        <span style={{
-                                            padding: '4px 12px',
-                                            borderRadius: '16px',
-                                            fontSize: '12px',
-                                            fontWeight: '500',
-                                            backgroundColor: `${getEstadoColor(jornada.estado)}20`,
-                                            color: getEstadoColor(jornada.estado)
-                                        }}>
-                                            {jornada.estado}
-                                        </span>
-                                    </td>
-                                    <td style={{ padding: '16px', color: '#6b7280' }}>{jornada.duracion} min</td>
+                                    <td style={{ padding: '16px', color: '#374151' }}>{jornada.hora_inicio}</td>
+                                    <td style={{ padding: '16px', color: '#374151' }}>{jornada.hora_fin}</td>
+                                    <td style={{ padding: '16px', color: '#6b7280' }}>{jornada.duracion}</td>
+                                    <td style={{ padding: '16px', color: '#374151' }}>{jornada.area_tratada} ha</td>
+                                    <td style={{ padding: '16px', color: '#374151', fontWeight: '500' }}>{getRobotNombre(jornada.robot)}</td>
+                                    <td style={{ padding: '16px', color: '#374151' }}>{getTanqueNombre(jornada.tanque)}</td>
                                     <td style={{ padding: '16px' }}>
                                         <div style={{ display: 'flex', gap: '8px' }}>
                                             <button
@@ -234,13 +246,12 @@ const JornadasPage: React.FC = () => {
                 onSubmit={handleAddJornada}
                 initialData={editingJornada ? {
                     fecha: editingJornada.fecha,
-                    robot_id: editingJornada.robot_id,
-                    robot_nombre: editingJornada.robot_nombre,
-                    area_cubierta: editingJornada.area_cubierta,
-                    malezas_detectadas: editingJornada.malezas_detectadas,
-                    herbicida_usado: editingJornada.herbicida_usado,
+                    hora_inicio: editingJornada.hora_inicio,
+                    hora_fin: editingJornada.hora_fin,
                     duracion: editingJornada.duracion,
-                    estado: editingJornada.estado
+                    area_tratada: editingJornada.area_tratada,
+                    robot: editingJornada.robot,
+                    tanque: editingJornada.tanque,
                 } : undefined}
                 isEditing={!!editingJornada}
             />
@@ -262,4 +273,4 @@ const JornadasPage: React.FC = () => {
     );
 };
 
-export default JornadasPage; 
+export default JornadasPage;

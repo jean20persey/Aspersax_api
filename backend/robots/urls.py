@@ -8,4 +8,5 @@ urlpatterns = [
     path('<int:id_robot>/actualizar/', views.ActualizarRobot.as_view(), name='actualizar-robot'),
     path('<int:id_robot>/eliminar/', views.EliminarRobot.as_view(), name='eliminar-robot'),
     path('estado/<str:estado>/', views.RobotsByEstado.as_view(), name='robots-por-estado'),
+    path('alertas/', views.RobotAlertas.as_view(), name='robots-alertas'),
 ]

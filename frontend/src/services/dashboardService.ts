@@ -6,7 +6,7 @@ const dashboardService = {
       start_date: startDate,
       end_date: endDate
     });
-    return axios.get(`/api/dashboard/stats/?${params.toString()}`);
+    return axios.get(`/dashboard/stats/?${params.toString()}`);
   },
 
   getActivityData: async (startDate: string, endDate: string) => {
@@ -14,19 +14,19 @@ const dashboardService = {
       start_date: startDate,
       end_date: endDate
     });
-    return axios.get(`/api/dashboard/activity/?${params.toString()}`);
+    return axios.get(`/dashboard/activity/?${params.toString()}`);
   },
 
   getRobotStats: async () => {
-    return axios.get('/api/dashboard/robots/');
+    return axios.get('/dashboard/robots/');
   },
 
   getTankStats: async () => {
-    return axios.get('/api/dashboard/tanks/');
+    return axios.get('/dashboard/tanks/');
   },
 
   getWeedStats: async () => {
-    return axios.get('/api/dashboard/weeds/');
+    return axios.get('/dashboard/weeds/');
   }
 };
 

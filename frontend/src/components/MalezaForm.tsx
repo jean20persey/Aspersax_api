@@ -12,8 +12,9 @@ import {
   MenuItem,
   Box,
   SelectChangeEvent,
+  FormControlLabel,
+  Switch,
 } from '@mui/material';
-import mockDataService from '../services/mockDataService';
 
 interface MalezaFormProps {
   open: boolean;
@@ -24,24 +25,22 @@ interface MalezaFormProps {
 }
 
 export interface MalezaFormData {
-  tipo: string;
-  ubicacion_x: number;
-  ubicacion_y: number;
-  fecha_deteccion: string;
-  estado: 'Detectada' | 'Tratada' | 'Eliminada';
-  robot_detector: string;
-  nivel_infestacion: 'Bajo' | 'Medio' | 'Alto';
+  nombre: string;
+  nombre_cientifico: string;
+  tipo: 'Hoja Ancha' | 'Hoja Angosta' | 'Gramínea' | 'Otra';
+  descripcion: string;
+  temporada: string;
+  resistencia_herbicida: boolean;
 }
 
 const MalezaForm: React.FC<MalezaFormProps> = ({ open, onClose, onSubmit, initialData, isEditing = false }) => {
   const [formData, setFormData] = useState<MalezaFormData>({
-    tipo: '',
-    ubicacion_x: 0,
-    ubicacion_y: 0,
-    fecha_deteccion: new Date().toISOString().split('T')[0],
-    estado: 'Detectada',
-    robot_detector: '',
-    nivel_infestacion: 'Medio',
+    nombre: '',
+    nombre_cientifico: '',
+    tipo: 'Otra',
+    descripcion: '',
+    temporada: '',
+    resistencia_herbicida: false,
   });
 
   React.useEffect(() => {
@@ -49,24 +48,21 @@ const MalezaForm: React.FC<MalezaFormProps> = ({ open, onClose, onSubmit, initia
       setFormData(initialData);
     } else if (!isEditing && open) {
       setFormData({
-        tipo: '',
-        ubicacion_x: 0,
-        ubicacion_y: 0,
-        fecha_deteccion: new Date().toISOString().split('T')[0],
-        estado: 'Detectada',
-        robot_detector: '',
-        nivel_infestacion: 'Medio',
+        nombre: '',
+        nombre_cientifico: '',
+        tipo: 'Otra',
+        descripcion: '',
+        temporada: '',
+        resistencia_herbicida: false,
       });
     }
   }, [initialData, isEditing, open]);
-
-  const robots = mockDataService.getRobots();
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: ['ubicacion_x', 'ubicacion_y'].includes(name) ? Number(value) : value
+      [name]: value
     }));
   };
 
@@ -82,13 +78,12 @@ const MalezaForm: React.FC<MalezaFormProps> = ({ open, onClose, onSubmit, initia
     e.preventDefault();
     onSubmit(formData);
     setFormData({
-      tipo: '',
-      ubicacion_x: 0,
-      ubicacion_y: 0,
-      fecha_deteccion: new Date().toISOString().split('T')[0],
-      estado: 'Detectada',
-      robot_detector: '',
-      nivel_infestacion: 'Medio',
+      nombre: '',
+      nombre_cientifico: '',
+      tipo: 'Otra',
+      descripcion: '',
+      temporada: '',
+      resistencia_herbicida: false,
     });
   };
 
@@ -100,65 +95,67 @@ const MalezaForm: React.FC<MalezaFormProps> = ({ open, onClose, onSubmit, initia
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <TextField
               required
-              name="tipo"
-              label="Tipo de Maleza"
-              value={formData.tipo}
+              name="nombre"
+              label="Nombre Común"
+              value={formData.nombre}
               onChange={handleInputChange}
-              placeholder="Ej: Amaranthus retroflexus (Yuyo Colorado)"
+              placeholder="Ej: Yuyo Colorado"
+              fullWidth
+            />
+
+            <TextField
+              name="nombre_cientifico"
+              label="Nombre Científico"
+              value={formData.nombre_cientifico}
+              onChange={handleInputChange}
+              placeholder="Ej: Amaranthus retroflexus"
               fullWidth
             />
             
+            <FormControl fullWidth required>
+              <InputLabel>Tipo</InputLabel>
+              <Select
+                name="tipo"
+                value={formData.tipo}
+                label="Tipo"
+                onChange={handleSelectChange}
+              >
+                <MenuItem value="Hoja Ancha">Hoja Ancha</MenuItem>
+                <MenuItem value="Hoja Angosta">Hoja Angosta</MenuItem>
+                <MenuItem value="Gramínea">Gramínea</MenuItem>
+                <MenuItem value="Otra">Otra</MenuItem>
+              </Select>
+            </FormControl>
+
             <TextField
-              required
-              name="ubicacion_x"
-              label="Ubicación X"
-              type="number"
-              value={formData.ubicacion_x}
+              name="descripcion"
+              label="Descripción"
+              value={formData.descripcion}
               onChange={handleInputChange}
-              inputProps={{ step: 0.1 }}
+              multiline
+              rows={3}
               fullWidth
             />
 
             <TextField
-              required
-              name="ubicacion_y"
-              label="Ubicación Y"
-              type="number"
-              value={formData.ubicacion_y}
+              name="temporada"
+              label="Temporada"
+              value={formData.temporada}
               onChange={handleInputChange}
-              inputProps={{ step: 0.1 }}
+              placeholder="Ej: Primavera-Verano"
               fullWidth
             />
 
-            <FormControl fullWidth required>
-              <InputLabel>Robot Detector</InputLabel>
-              <Select
-                name="robot_detector"
-                value={formData.robot_detector}
-                label="Robot Detector"
-                onChange={handleSelectChange}
-              >
-                {robots.map(robot => (
-                  <MenuItem key={robot.id_robot} value={robot.nombre}>
-                    {robot.nombre}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-
-            <FormControl fullWidth required>
-              <InputLabel>Nivel de Infestación</InputLabel>
-              <Select
-                name="nivel_infestacion"
-                value={formData.nivel_infestacion}
-                label="Nivel de Infestación"
-                onChange={handleSelectChange}
-              >
-                <MenuItem value="Bajo">Bajo</MenuItem>
-                <MenuItem value="Medio">Medio</MenuItem>
-                <MenuItem value="Alto">Alto</MenuItem>
-              </Select>
-            </FormControl>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={formData.resistencia_herbicida}
+                  onChange={(e) => setFormData(prev => ({ ...prev, resistencia_herbicida: e.target.checked }))}
+                  name="resistencia_herbicida"
+                />
+              }
+              label="¿Tiene resistencia a herbicida?"
+            />
           </Box>
         </DialogContent>
         <DialogActions>

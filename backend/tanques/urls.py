@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import TanqueViewSet
 
 router = DefaultRouter()
-router.register(r'tanques', TanqueViewSet)
+router.register(r'', TanqueViewSet, basename='tanque')
 
 urlpatterns = [
     path('', include(router.urls)),

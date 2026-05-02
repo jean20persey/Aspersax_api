@@ -43,3 +43,13 @@ class EliminarRobot(generics.DestroyAPIView):
     queryset = Robot.objects.all()
     serializer_class = RobotSerializer
     lookup_field = 'id_robot'
+
+class RobotAlertas(generics.ListAPIView):
+    serializer_class = RobotSerializer
+    
+    def get_queryset(self):
+        # Filtra robots con batería < 20% o estado 'Fuera de Servicio' o 'Mantenimiento'
+        return Robot.objects.filter(
+            Q(bateria__lt=20) | 
+            Q(estado__in=['Fuera de Servicio', 'Mantenimiento'])
+        )

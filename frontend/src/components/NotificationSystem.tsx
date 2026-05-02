@@ -53,14 +53,18 @@ const NotificationSystem: React.FC = () => {
 
   const cargarNotificaciones = async () => {
     try {
-      const response = await notificacionesService.getAll();
-      const notificacionesFiltradas = response.data.filter((notif: Notification) => {
-        if (userRole?.isAdmin) {
-          return notif.para_admin || notif.para_usuario;
-        }
-        return notif.para_usuario;
-      });
-      setNotifications(notificacionesFiltradas);
+      // Como el backend aún no tiene la app de notificaciones, usamos solo el modo demo por ahora
+      // const response = await notificacionesService.getAll();
+      // const notificacionesFiltradas = response.data.filter((notif: Notification) => {
+      //   if (userRole?.isAdmin) {
+      //     return notif.para_admin || notif.para_usuario;
+      //   }
+      //   return notif.para_usuario;
+      // });
+      // setNotifications(notificacionesFiltradas);
+      
+      // Iniciar directamente con las notificaciones demo
+      setNotifications(notificacionesDemo);
     } catch (error) {
       console.error('Error cargando notificaciones:', error);
     }
@@ -76,52 +80,27 @@ const NotificationSystem: React.FC = () => {
 
   const marcarComoLeida = async (id: number) => {
     try {
-      // Si estamos usando notificaciones demo, actualizar directamente el estado
-      if (notifications.length === 0) {
-        const updatedDemo = notificacionesDemo.map(notif => 
-          notif.id === id ? { ...notif, leida: true } : notif
-        );
-        setNotifications(updatedDemo);
-        return;
-      }
-      
-      await notificacionesService.markAsRead(id);
+      // Usar solo lógica local por ahora (demo mode)
       setNotifications(prev => 
         prev.map(notif => 
           notif.id === id ? { ...notif, leida: true } : notif
         )
       );
+      // await notificacionesService.markAsRead(id);
     } catch (error) {
       console.error('Error marcando notificación como leída:', error);
-      // Fallback: actualizar estado local aunque falle la API
-      setNotifications(prev => 
-        prev.map(notif => 
-          notif.id === id ? { ...notif, leida: true } : notif
-        )
-      );
     }
   };
 
   const marcarTodasComoLeidas = async () => {
     try {
-      // Si estamos usando notificaciones demo, actualizar directamente el estado
-      if (notifications.length === 0) {
-        // Actualizar las notificaciones demo
-        const updatedDemo = notificacionesDemo.map(notif => ({ ...notif, leida: true }));
-        setNotifications(updatedDemo);
-        return;
-      }
-      
-      await notificacionesService.markAllAsRead();
+      // Usar solo lógica local por ahora (demo mode)
       setNotifications(prev => 
         prev.map(notif => ({ ...notif, leida: true }))
       );
+      // await notificacionesService.markAllAsRead();
     } catch (error) {
       console.error('Error marcando todas las notificaciones como leídas:', error);
-      // Fallback: actualizar estado local aunque falle la API
-      setNotifications(prev => 
-        prev.map(notif => ({ ...notif, leida: true }))
-      );
     }
   };
 
@@ -182,9 +161,8 @@ const NotificationSystem: React.FC = () => {
     }
   ];
 
-  // Usar notificaciones del estado si existen, sino usar demo
-  const notificacionesParaMostrar = notifications.length > 0 ? notifications : notificacionesDemo;
-  const notificacionesFiltradas = notificacionesParaMostrar.filter(notif => {
+  // Usar notificaciones del estado
+  const notificacionesFiltradas = notifications.filter(notif => {
     if (userRole?.isAdmin) {
       return notif.para_admin || notif.para_usuario;
     }

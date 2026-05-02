@@ -1,0 +1,85 @@
+{
+	"info": {
+		"name": "Aspersax - Endpoints Completos (37)",
+		"description": "Colección completa siguiendo el orden exacto de las capturas del usuario (37 endpoints).",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1-6: Usuarios y Perfil",
+			"item": [
+				{ "name": "1. Registro de usuarios", "request": { "method": "POST", "url": { "raw": "{{base_url}}/api/auth/registro/" }, "body": { "mode": "raw", "raw": "{\n    \"username\": \"Fredy\",\n    \"email\": \"fredy@ejemplo.com\",\n    \"password\": \"Fredy123.\",\n    \"password2\": \"Fredy123.\"\n}", "options": { "raw": { "language": "json" } } } } },
+				{ "name": "2. Obtener Token (Login)", "request": { "method": "POST", "url": { "raw": "{{base_url}}/api/token/" }, "body": { "mode": "raw", "raw": "{\n    \"username\": \"JeanPier\",\n    \"password\": \"Jean123.\"\n}", "options": { "raw": { "language": "json" } } } } },
+				{ "name": "3. Refrescar Token", "request": { "method": "POST", "url": { "raw": "{{base_url}}/api/token/refresh/" }, "body": { "mode": "raw", "raw": "{\n    \"refresh\": \"tu_refresh_token_aqui\"\n}", "options": { "raw": { "language": "json" } } } } },
+				{ "name": "4. Ver Perfil de Superusuario", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{base_url}}/api/auth/perfil/" } } },
+				{ "name": "5. Actualizar Perfil", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] }, "method": "PUT", "url": { "raw": "{{base_url}}/api/auth/perfil/" }, "body": { "mode": "raw", "raw": "{\n    \"first_name\": \"Fredy Actualizado\",\n    \"telefono\": \"3223117780\"\n}", "options": { "raw": { "language": "json" } } } } },
+				{ "name": "6. Lista de Usuarios", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{base_url}}/api/auth/usuarios/" } } }
+			]
+		},
+		{
+			"name": "7-12: Robots",
+			"item": [
+				{ "name": "7. Crear robot", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] }, "method": "POST", "url": { "raw": "{{base_url}}/api/robots/crear/" }, "body": { "mode": "raw", "raw": "{\n    \"nombre\": \"Robot-Test\",\n    \"estado\": \"Disponible\",\n    \"bateria\": 100\n}", "options": { "raw": { "language": "json" } } } } },
+				{ "name": "8. Listar robots", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{base_url}}/api/robots/" } } },
+				{ "name": "9. Buscar robot por ID", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{base_url}}/api/robots/1/" } } },
+				{ "name": "10. Buscar robot por estado", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{base_url}}/api/robots/estado/Disponible/" } } },
+				{ "name": "11. Actualizar robot", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] }, "method": "PUT", "url": { "raw": "{{base_url}}/api/robots/1/actualizar/" }, "body": { "mode": "raw", "raw": "{\n    \"nombre\": \"Robot Actualizado\",\n    \"estado\": \"En Operación\"\n}", "options": { "raw": { "language": "json" } } } } },
+				{ "name": "12. Eliminar robot", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] }, "method": "DELETE", "url": { "raw": "{{base_url}}/api/robots/1/eliminar/" } } }
+			]
+		},
+		{
+			"name": "13-17: Tanques",
+			"item": [
+				{ "name": "13. Crear tanque", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] }, "method": "POST", "url": { "raw": "{{base_url}}/api/tanques/" }, "body": { "mode": "raw", "raw": "{\n    \"nombre\": \"Tanque Nuevo\",\n    \"capacidad\": 500,\n    \"nivel_actual\": 500,\n    \"estado\": \"Lleno\"\n}", "options": { "raw": { "language": "json" } } } } },
+				{ "name": "14. Listar tanques", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{base_url}}/api/tanques/" } } },
+				{ "name": "15. Actualizar tanque", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] }, "method": "PUT", "url": { "raw": "{{base_url}}/api/tanques/1/" }, "body": { "mode": "raw", "raw": "{\n    \"nombre\": \"Tanque Editado\",\n    \"capacidad\": 600\n}", "options": { "raw": { "language": "json" } } } } },
+				{ "name": "16. Buscar tanque por tipo", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{base_url}}/api/tanques/tipo/Lleno/" } } },
+				{ "name": "17. Eliminar tanque", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] }, "method": "DELETE", "url": { "raw": "{{base_url}}/api/tanques/1/" } } }
+			]
+		},
+		{
+			"name": "18-23: Jornadas",
+			"item": [
+				{ "name": "18. Crear jornadas", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] }, "method": "POST", "url": { "raw": "{{base_url}}/api/jornadas/crear/" }, "body": { "mode": "raw", "raw": "{\n    \"fecha\": \"2025-08-30\",\n    \"hora_inicio\": \"06:00\",\n    \"hora_fin\": \"10:00\",\n    \"duracion\": \"04:00:00\",\n    \"area_tratada\": 2000,\n    \"robot\": 1,\n    \"tanque\": 1\n}", "options": { "raw": { "language": "json" } } } } },
+				{ "name": "19. Listar jornadas", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{base_url}}/api/jornadas/" } } },
+				{ "name": "20. Buscar jornada por ID", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{base_url}}/api/jornadas/1/" } } },
+				{ "name": "21. Buscar jornadas por fecha", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{base_url}}/api/jornadas/buscar/?fecha=2025-08-27" } } },
+				{ "name": "22. Actualizar jornada", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] }, "method": "PATCH", "url": { "raw": "{{base_url}}/api/jornadas/1/actualizar/" }, "body": { "mode": "raw", "raw": "{\n    \"area_tratada\": 2500\n}", "options": { "raw": { "language": "json" } } } } },
+				{ "name": "23. Eliminar jornada", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] }, "method": "DELETE", "url": { "raw": "{{base_url}}/api/jornadas/1/eliminar/" } } }
+			]
+		},
+		{
+			"name": "24-28: Catálogo de Malezas",
+			"item": [
+				{ "name": "24. Crear Malezas", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] }, "method": "POST", "url": { "raw": "{{base_url}}/api/malezas/" }, "body": { "mode": "raw", "raw": "{\n    \"nombre\": \"Maleza Nueva\",\n    \"tipo\": \"Hoja Ancha\",\n    \"descripcion\": \"Prueba\"\n}", "options": { "raw": { "language": "json" } } } } },
+				{ "name": "25. Listar malezas", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{base_url}}/api/malezas/" } } },
+				{ "name": "26. Actualizar malezas", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] }, "method": "PATCH", "url": { "raw": "{{base_url}}/api/malezas/1/" }, "body": { "mode": "raw", "raw": "{\n    \"descripcion\": \"Descripción actualizada\"\n}", "options": { "raw": { "language": "json" } } } } },
+				{ "name": "27. Buscar maleza por nombre", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{base_url}}/api/malezas/buscar/?q=Diente" } } },
+				{ "name": "28. Buscar maleza por ID", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{base_url}}/api/malezas/1/" } } }
+			]
+		},
+		{
+			"name": "29-33: Malezas Detectadas",
+			"item": [
+				{ "name": "29. Crear una maleza detectada", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] }, "method": "POST", "url": { "raw": "{{base_url}}/api/malezas/detectadas/crear/" }, "body": { "mode": "raw", "raw": "{\n    \"jornada\": 1,\n    \"maleza\": 1,\n    \"ubicacion\": \"Sector Norte\",\n    \"densidad\": \"Media\"\n}", "options": { "raw": { "language": "json" } } } } },
+				{ "name": "30. Listar las malezas detectadas", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{base_url}}/api/malezas/detectadas/" } } },
+				{ "name": "31. Actualizar una maleza detectada", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] }, "method": "PATCH", "url": { "raw": "{{base_url}}/api/malezas/detectadas/1/" }, "body": { "mode": "raw", "raw": "{\n    \"densidad\": \"Alta\"\n}", "options": { "raw": { "language": "json" } } } } },
+				{ "name": "32. Listar malezas detectadas por jornada", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{base_url}}/api/malezas/detectadas/jornada/1/" } } },
+				{ "name": "33. Buscar maleza detectada por ID", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{base_url}}/api/malezas/detectadas/1/" } } }
+			]
+		},
+		{
+			"name": "34-37: Reportes",
+			"item": [
+				{ "name": "34. Crear un nuevo reporte", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] }, "method": "POST", "url": { "raw": "{{base_url}}/api/reportes/" }, "body": { "mode": "raw", "raw": "{\n    \"tipo\": \"Jornada\",\n    \"robot\": 1,\n    \"area_cubierta\": 1200,\n    \"herbicida_usado\": 8.5\n}", "options": { "raw": { "language": "json" } } } } },
+				{ "name": "35. Listar reportes", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{base_url}}/api/reportes/" } } },
+				{ "name": "36. Actualizar reporte", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] }, "method": "PATCH", "url": { "raw": "{{base_url}}/api/reportes/1/" }, "body": { "mode": "raw", "raw": "{\n    \"observaciones\": \"Actualización de reporte\"\n}", "options": { "raw": { "language": "json" } } } } },
+				{ "name": "37. Buscar reporte por ID", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{base_url}}/api/reportes/1/" } } }
+			]
+		}
+	],
+	"variable": [
+		{ "key": "base_url", "value": "http://127.0.0.1:8000" },
+		{ "key": "access_token", "value": "pega_tu_token_aqui" }
+	]
+}
