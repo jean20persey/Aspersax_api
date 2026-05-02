@@ -66,7 +66,9 @@ import EmailDialog from '../components/EmailDialog';
 import emailService from '../services/emailService';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
+import { logoBase64 } from '../constants/logoBase64';
 
 // Extend jsPDF type to include autoTable
 declare module 'jspdf' {
@@ -246,23 +248,34 @@ const ReportesPage: React.FC = () => {
 
             const doc = new jsPDF();
             
+            // Añadir Logo
+            doc.addImage(logoBase64, 'JPEG', 20, 10, 30, 30);
+
             // Título del reporte
-            doc.setFontSize(20);
-            doc.text('Reporte del Sistema Aspersax', 20, 20);
+            doc.setFontSize(22);
+            doc.setTextColor(46, 125, 50); // #2e7d32
+            doc.text('Reporte Analítico - ASPERSAX', 60, 25);
             
             // Información del período
-            doc.setFontSize(12);
+            doc.setFontSize(11);
+            doc.setTextColor(100, 100, 100);
             const fechaInicioStr = fechaInicio ? fechaInicio.format('DD/MM/YYYY') : 'N/A';
             const fechaFinStr = fechaFin ? fechaFin.format('DD/MM/YYYY') : 'N/A';
-            doc.text(`Período: ${fechaInicioStr} - ${fechaFinStr}`, 20, 35);
-            doc.text(`Generado: ${dayjs().format('DD/MM/YYYY HH:mm')}`, 20, 45);
+            doc.text(`Período: ${fechaInicioStr} - ${fechaFinStr}`, 60, 35);
+            doc.text(`Generado: ${dayjs().format('DD/MM/YYYY HH:mm')}`, 60, 42);
             
+            // Línea separadora
+            doc.setDrawColor(46, 125, 50);
+            doc.setLineWidth(0.5);
+            doc.line(20, 48, 190, 48);
+
             let yPosition = 60;
             
             // Sección de Productividad
             doc.setFontSize(16);
-            doc.text('Reporte de Productividad', 20, yPosition);
-            yPosition += 15;
+            doc.setTextColor(46, 125, 50);
+            doc.text('Productividad del Campo', 20, yPosition);
+            yPosition += 10;
             
             if (reportData.productividad && reportData.productividad.length > 0) {
                 const productividadData = reportData.productividad.map(item => [
@@ -279,21 +292,24 @@ const ReportesPage: React.FC = () => {
                     head: [['Fecha', 'Robot', 'Área', 'Malezas', 'Herbicida', 'Eficiencia']],
                     body: productividadData,
                     theme: 'grid',
-                    styles: { fontSize: 8 },
-                    headStyles: { fillColor: [41, 128, 185] }
+                    styles: { fontSize: 10, cellPadding: 3 },
+                    headStyles: { fillColor: [46, 125, 50], textColor: [255, 255, 255] },
+                    alternateRowStyles: { fillColor: [241, 248, 233] }
                 });
                 
                 yPosition = (doc as any).lastAutoTable.finalY + 20;
             } else {
                 doc.setFontSize(12);
+                doc.setTextColor(100, 100, 100);
                 doc.text('No hay datos de productividad disponibles', 20, yPosition);
-                yPosition += 30;
+                yPosition += 20;
             }
             
             // Sección de Costos
             doc.setFontSize(16);
+            doc.setTextColor(46, 125, 50);
             doc.text('Análisis de Costos', 20, yPosition);
-            yPosition += 15;
+            yPosition += 10;
             
             if (reportData.costos) {
                 const costosData = [
@@ -305,11 +321,12 @@ const ReportesPage: React.FC = () => {
                 
                 autoTable(doc, {
                     startY: yPosition,
-                    head: [['Concepto', 'Costo']],
+                    head: [['Concepto', 'Costo Estimado']],
                     body: costosData,
                     theme: 'grid',
-                    styles: { fontSize: 10 },
-                    headStyles: { fillColor: [231, 76, 60] }
+                    styles: { fontSize: 10, cellPadding: 3 },
+                    headStyles: { fillColor: [245, 158, 11], textColor: [255, 255, 255] },
+                    alternateRowStyles: { fillColor: [254, 252, 232] }
                 });
             }
             
@@ -323,61 +340,70 @@ const ReportesPage: React.FC = () => {
         }
     };
 
-    const handleExportExcel = () => {
+    const handleExportExcel = async () => {
         setAlert({ open: true, message: 'Generando reporte Excel...', severity: 'success' });
         
         try {
-            const workbook = XLSX.utils.book_new();
+            if (!reportData) throw new Error('No hay datos');
+
+            const workbook = new ExcelJS.Workbook();
+            workbook.creator = 'Aspersax';
+            workbook.created = new Date();
+
+            const imageId = workbook.addImage({
+                base64: logoBase64,
+                extension: 'jpeg',
+            });
+
+            // Hoja 1: Productividad
+            const sheet1 = workbook.addWorksheet('Productividad');
+            sheet1.addImage(imageId, 'A1:C5');
             
-            if (reportData) {
-                // Hoja de Productividad
-                const productividadSheet = XLSX.utils.json_to_sheet(
-                    reportData.productividad.map(item => ({
-                        'Fecha': item.fecha,
-                        'Robot': item.robot,
-                        'Área (ha)': item.area,
-                        'Malezas Detectadas': item.malezas,
-                        'Herbicida (L)': item.herbicida,
-                        'Eficiencia (ha/h)': item.eficiencia
-                    }))
-                );
-                XLSX.utils.book_append_sheet(workbook, productividadSheet, 'Productividad');
-                
-                // Hoja de Estado del Sistema
-                const estadoSheet = XLSX.utils.json_to_sheet([
-                    { 'Concepto': 'Robots Activos', 'Cantidad': reportData.estadoSistema.robotsActivos },
-                    { 'Concepto': 'Robots en Mantenimiento', 'Cantidad': reportData.estadoSistema.robotsMantenimiento },
-                    { 'Concepto': 'Tanques Llenos', 'Cantidad': reportData.estadoSistema.tanquesLlenos },
-                    { 'Concepto': 'Tanques Bajos', 'Cantidad': reportData.estadoSistema.tanquesBajos },
-                    { 'Concepto': 'Malezas Detectadas', 'Cantidad': reportData.estadoSistema.malezasDetectadas },
-                    { 'Concepto': 'Malezas Tratadas', 'Cantidad': reportData.estadoSistema.malezasTratadas },
-                    { 'Concepto': 'Malezas Eliminadas', 'Cantidad': reportData.estadoSistema.malezasEliminadas }
-                ]);
-                XLSX.utils.book_append_sheet(workbook, estadoSheet, 'Estado Sistema');
-                
-                // Hoja de Tendencias
-                const tendenciasSheet = XLSX.utils.json_to_sheet(
-                    reportData.tendencias.map(item => ({
-                        'Fecha': item.fecha,
-                        'Jornadas': item.jornadas,
-                        'Área Cubierta (ha)': item.area,
-                        'Malezas Detectadas': item.malezas
-                    }))
-                );
-                XLSX.utils.book_append_sheet(workbook, tendenciasSheet, 'Tendencias');
-                
-                // Hoja de Costos
-                const costosSheet = XLSX.utils.json_to_sheet([
-                    { 'Concepto': 'Herbicida', 'Costo (COP)': reportData.costos.herbicida },
-                    { 'Concepto': 'Energía', 'Costo (COP)': reportData.costos.energia },
-                    { 'Concepto': 'Mantenimiento', 'Costo (COP)': reportData.costos.mantenimiento },
-                    { 'Concepto': 'TOTAL', 'Costo (COP)': reportData.costos.total }
-                ]);
-                XLSX.utils.book_append_sheet(workbook, costosSheet, 'Costos');
-            }
+            sheet1.mergeCells('D2:F3');
+            sheet1.getCell('D2').value = 'REPORTE ANALÍTICO - ASPERSAX';
+            sheet1.getCell('D2').font = { size: 16, bold: true, color: { argb: 'FF2E7D32' } };
+            sheet1.getCell('D2').alignment = { vertical: 'middle', horizontal: 'center' };
+
+            sheet1.getRow(7).values = ['Fecha', 'Robot', 'Área (ha)', 'Malezas', 'Herbicida (L)', 'Eficiencia (ha/h)'];
+            sheet1.getRow(7).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+            sheet1.getRow(7).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2E7D32' } };
+
+            reportData.productividad.forEach((item, index) => {
+                sheet1.addRow([item.fecha, item.robot, item.area, item.malezas, item.herbicida, item.eficiencia]);
+            });
+            sheet1.columns = [{ width: 15 }, { width: 20 }, { width: 15 }, { width: 15 }, { width: 15 }, { width: 18 }];
+
+            // Hoja 2: Estado del Sistema
+            const sheet2 = workbook.addWorksheet('Estado Sistema');
+            sheet2.addImage(imageId, 'A1:B5');
+            sheet2.getRow(7).values = ['Concepto', 'Cantidad'];
+            sheet2.getRow(7).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+            sheet2.getRow(7).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0EA5E9' } };
             
-            // Guardar el archivo Excel
-            XLSX.writeFile(workbook, `Reporte_Aspersax_${dayjs().format('YYYY-MM-DD')}.xlsx`);
+            sheet2.addRow(['Robots Activos', reportData.estadoSistema.robotsActivos]);
+            sheet2.addRow(['Robots en Mantenimiento', reportData.estadoSistema.robotsMantenimiento]);
+            sheet2.addRow(['Tanques Llenos', reportData.estadoSistema.tanquesLlenos]);
+            sheet2.addRow(['Tanques Bajos', reportData.estadoSistema.tanquesBajos]);
+            sheet2.addRow(['Malezas Detectadas', reportData.estadoSistema.malezasDetectadas]);
+            sheet2.addRow(['Malezas Tratadas', reportData.estadoSistema.malezasTratadas]);
+            sheet2.addRow(['Malezas Eliminadas', reportData.estadoSistema.malezasEliminadas]);
+            sheet2.columns = [{ width: 30 }, { width: 15 }];
+
+            // Hoja 3: Costos
+            const sheet3 = workbook.addWorksheet('Costos');
+            sheet3.addImage(imageId, 'A1:B5');
+            sheet3.getRow(7).values = ['Concepto', 'Costo (COP)'];
+            sheet3.getRow(7).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+            sheet3.getRow(7).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF59E0B' } };
+            
+            sheet3.addRow(['Herbicida', reportData.costos.herbicida]);
+            sheet3.addRow(['Energía', reportData.costos.energia]);
+            sheet3.addRow(['Mantenimiento', reportData.costos.mantenimiento]);
+            sheet3.addRow(['TOTAL', reportData.costos.total]);
+            sheet3.columns = [{ width: 25 }, { width: 20 }];
+            
+            const buffer = await workbook.xlsx.writeBuffer();
+            saveAs(new Blob([buffer]), `Reporte_Aspersax_${dayjs().format('YYYY-MM-DD')}.xlsx`);
             
             setAlert({ open: true, message: 'Reporte Excel descargado exitosamente', severity: 'success' });
         } catch (error) {
