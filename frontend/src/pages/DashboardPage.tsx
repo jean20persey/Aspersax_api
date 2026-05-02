@@ -45,9 +45,7 @@ import {
     PolarRadiusAxis,
     Radar,
     Cell,
-    Legend,
-    ReferenceLine,
-    Brush
+    Legend
 } from 'recharts';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import WaterDropIcon from '@mui/icons-material/WaterDrop';
@@ -193,7 +191,7 @@ const DashboardPage: React.FC = () => {
                 
                 if (statsRes.data) setStats(statsRes.data);
                 if (robotsRes.data) {
-                    setRobots(Array.isArray(robotsRes.data) ? robotsRes.data : robotsRes.data.results || []);
+                    setRobots(Array.isArray(robotsRes.data) ? robotsRes.data : (robotsRes.data as any).results || []);
                 }
                 if (activityRes.data) console.log('Actividad cargada:', activityRes.data);
                 
@@ -656,15 +654,19 @@ const DashboardPage: React.FC = () => {
 
             {activeTab === 1 && (
                 <Box sx={{ mb: 4 }}>
-                    <Typography variant="h6" gutterBottom>
-                        Gráficos y Análisis
-                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                        <TimelineIcon sx={{ color: '#2e7d32', mr: 1, fontSize: 28 }} />
+                        <Typography variant="h5" sx={{ fontWeight: 600, color: '#2e7d32' }}>
+                            Análisis Agropecuario
+                        </Typography>
+                    </Box>
                     
-                    {/* Gráfico mejorado - Actividad y Productividad */}
-                    <Card sx={{ mb: 3, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
+                    {/* Gráfico 1 - Actividad y Productividad */}
+                    <Card sx={{ mb: 4, borderTop: '4px solid #2e7d32', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
                         <CardContent>
-                            <Typography variant="h6" sx={{ mb: 2, color: 'white', fontWeight: 600 }}>
-                                📊 Análisis de Productividad Agrícola
+                            <Typography variant="h6" sx={{ mb: 3, color: '#374151', fontWeight: 600, display: 'flex', alignItems: 'center' }}>
+                                <TerrainIcon sx={{ mr: 1, color: '#795548' }} />
+                                Productividad del Campo
                             </Typography>
                             <ResponsiveContainer width="100%" height={400}>
                                 <ComposedChart data={[
@@ -676,146 +678,135 @@ const DashboardPage: React.FC = () => {
                                     { fecha: 'Sáb', robots: Math.floor(robots.length * 0.7) || 9, malezas: Math.floor(malezas.length * 0.6) || 42, herbicida: 135, eficiencia: 87 },
                                     { fecha: 'Dom', robots: Math.floor(robots.length * 0.6) || 7, malezas: Math.floor(malezas.length * 0.5) || 35, herbicida: 110, eficiencia: 82 }
                                 ]}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.2)" />
-                                    <XAxis dataKey="fecha" stroke="white" />
-                                    <YAxis yAxisId="left" stroke="white" />
-                                    <YAxis yAxisId="right" orientation="right" stroke="white" />
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" vertical={false} />
+                                    <XAxis dataKey="fecha" stroke="#6b7280" axisLine={false} tickLine={false} />
+                                    <YAxis yAxisId="left" stroke="#6b7280" axisLine={false} tickLine={false} />
+                                    <YAxis yAxisId="right" orientation="right" stroke="#6b7280" axisLine={false} tickLine={false} />
                                     <RechartsTooltip 
                                         contentStyle={{ 
-                                            backgroundColor: 'rgba(0,0,0,0.8)', 
-                                            border: 'none', 
+                                            backgroundColor: '#ffffff', 
+                                            border: '1px solid #e5e7eb', 
                                             borderRadius: '8px',
-                                            color: 'white'
+                                            boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
                                         }}
                                     />
-                                    <Legend />
-                                    <Bar yAxisId="left" dataKey="robots" fill="#4ade80" name="Robots Activos" radius={[4, 4, 0, 0]} />
-                                    <Bar yAxisId="left" dataKey="malezas" fill="#f59e0b" name="Malezas Detectadas" radius={[4, 4, 0, 0]} />
+                                    <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                                    <Bar yAxisId="left" dataKey="robots" fill="#f59e0b" name="Robots Activos" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                                    <Bar yAxisId="left" dataKey="malezas" fill="#ef4444" name="Malezas Detectadas" radius={[4, 4, 0, 0]} maxBarSize={40} />
                                     <Line 
                                         yAxisId="right" 
                                         type="monotone" 
                                         dataKey="eficiencia" 
-                                        stroke="#ff6b6b" 
+                                        stroke="#10b981" 
                                         strokeWidth={3}
                                         name="Eficiencia %"
-                                        dot={{ fill: '#ff6b6b', strokeWidth: 2, r: 6 }}
+                                        dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
+                                        activeDot={{ r: 6 }}
                                     />
                                     <Area 
                                         yAxisId="right" 
                                         type="monotone" 
                                         dataKey="herbicida" 
-                                        fill="rgba(59, 130, 246, 0.3)" 
+                                        fill="#3b82f6" 
+                                        fillOpacity={0.1}
                                         stroke="#3b82f6"
+                                        strokeWidth={2}
                                         name="Herbicida (L)"
                                     />
-                                    <Brush dataKey="fecha" height={30} stroke="#8884d8" />
                                 </ComposedChart>
                             </ResponsiveContainer>
                         </CardContent>
                     </Card>
-
-                    {/* Grid de gráficos mejorados */}
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>
-                        {/* Gráfico 3D mejorado - Estado de robots */}
-                        <Card sx={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+                    
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 4, mb: 4 }}>
+                        {/* Gráfico 2 - Estado de robots */}
+                        <Card sx={{ borderTop: '4px solid #f59e0b', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
                             <CardContent>
-                                <Typography variant="h6" sx={{ mb: 2, color: 'white', fontWeight: 600 }}>
-                                    🤖 Estado Operativo de Robots
+                                <Typography variant="h6" sx={{ mb: 3, color: '#374151', fontWeight: 600, display: 'flex', alignItems: 'center' }}>
+                                    <SmartToyIcon sx={{ mr: 1, color: '#f59e0b' }} />
+                                    Estado de Flota de Robots
                                 </Typography>
-                                <ResponsiveContainer width="100%" height={350}>
-                                    <BarChart data={[
-                                        { estado: 'En Operación', cantidad: robots.filter(r => r.estado === 'En Operación').length, color: '#22c55e' },
-                                        { estado: 'Disponible', cantidad: robots.filter(r => r.estado === 'Disponible').length, color: '#3b82f6' },
-                                        { estado: 'En Mantenimiento', cantidad: robots.filter(r => r.estado === 'En Mantenimiento').length, color: '#f59e0b' },
-                                        { estado: 'Fuera de Servicio', cantidad: robots.filter(r => r.estado === 'Fuera de Servicio').length, color: '#ef4444' }
-                                    ]}>
-                                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.2)" />
-                                        <XAxis 
-                                            dataKey="estado" 
-                                            stroke="white" 
-                                            angle={-45}
-                                            textAnchor="end"
-                                            height={100}
-                                            interval={0}
-                                            tick={{ fontSize: 12 }}
-                                        />
-                                        <YAxis stroke="white" />
+                                <ResponsiveContainer width="100%" height={300}>
+                                    <BarChart 
+                                        data={[
+                                            { estado: 'En Operación', cantidad: robots.filter(r => r.estado === 'En Operación').length, color: '#10b981' },
+                                            { estado: 'Disponible', cantidad: robots.filter(r => r.estado === 'Disponible').length, color: '#3b82f6' },
+                                            { estado: 'En Mantenimiento', cantidad: robots.filter(r => r.estado === 'En Mantenimiento').length, color: '#f59e0b' },
+                                            { estado: 'Fuera de Servicio', cantidad: robots.filter(r => r.estado === 'Fuera de Servicio').length, color: '#ef4444' }
+                                        ]}
+                                        layout="vertical"
+                                        margin={{ left: 30 }}
+                                    >
+                                        <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e0e0e0" />
+                                        <XAxis type="number" stroke="#6b7280" axisLine={false} tickLine={false} />
+                                        <YAxis type="category" dataKey="estado" stroke="#6b7280" axisLine={false} tickLine={false} />
                                         <RechartsTooltip 
+                                            cursor={{fill: 'transparent'}}
                                             contentStyle={{ 
-                                                backgroundColor: 'rgba(0,0,0,0.8)', 
-                                                border: 'none', 
-                                                borderRadius: '8px',
-                                                color: 'white'
+                                                backgroundColor: '#ffffff', 
+                                                border: '1px solid #e5e7eb', 
+                                                borderRadius: '8px'
                                             }}
                                         />
                                         <Bar 
                                             dataKey="cantidad" 
-                                            radius={[8, 8, 0, 0]}
-                                            stroke="rgba(255,255,255,0.3)"
-                                            strokeWidth={1}
+                                            radius={[0, 4, 4, 0]}
+                                            barSize={30}
                                         >
                                             {robots.length > 0 && [
-                                                { estado: 'En Operación', cantidad: robots.filter(r => r.estado === 'En Operación').length, color: '#22c55e' },
-                                                { estado: 'Disponible', cantidad: robots.filter(r => r.estado === 'Disponible').length, color: '#3b82f6' },
-                                                { estado: 'En Mantenimiento', cantidad: robots.filter(r => r.estado === 'En Mantenimiento').length, color: '#f59e0b' },
-                                                { estado: 'Fuera de Servicio', cantidad: robots.filter(r => r.estado === 'Fuera de Servicio').length, color: '#ef4444' }
+                                                { estado: 'En Operación', color: '#10b981' },
+                                                { estado: 'Disponible', color: '#3b82f6' },
+                                                { estado: 'En Mantenimiento', color: '#f59e0b' },
+                                                { estado: 'Fuera de Servicio', color: '#ef4444' }
                                             ].map((entry, index) => (
                                                 <Cell key={`cell-${index}`} fill={entry.color} />
                                             ))}
                                         </Bar>
-                                        <defs>
-                                            <linearGradient id="robotGradient" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="0%" stopColor="#4ade80" />
-                                                <stop offset="100%" stopColor="#22c55e" />
-                                            </linearGradient>
-                                        </defs>
                                     </BarChart>
                                 </ResponsiveContainer>
                             </CardContent>
                         </Card>
 
-                        {/* Gráfico de dona mejorado - Distribución de malezas */}
-                        <Card sx={{ background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' }}>
+                        {/* Gráfico 3 - Control de Malezas */}
+                        <Card sx={{ borderTop: '4px solid #ef4444', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
                             <CardContent>
-                                <Typography variant="h6" sx={{ mb: 2, color: 'white', fontWeight: 600 }}>
-                                    🌿 Control de Malezas
+                                <Typography variant="h6" sx={{ mb: 3, color: '#374151', fontWeight: 600, display: 'flex', alignItems: 'center' }}>
+                                    <GrassIcon sx={{ mr: 1, color: '#ef4444' }} />
+                                    Control de Malezas
                                 </Typography>
                                 <ResponsiveContainer width="100%" height={300}>
                                     <PieChart>
                                         <Pie
                                             data={[
-                                                { name: 'Detectadas', value: malezas.filter(m => m.estado === 'Detectada').length || 15, color: '#fbbf24' },
-                                                { name: 'Tratadas', value: malezas.filter(m => m.estado === 'Tratada').length || 8, color: '#3b82f6' },
+                                                { name: 'Detectadas', value: malezas.filter(m => m.estado === 'Detectada').length || 15, color: '#ef4444' },
+                                                { name: 'Tratadas', value: malezas.filter(m => m.estado === 'Tratada').length || 8, color: '#f59e0b' },
                                                 { name: 'Eliminadas', value: malezas.filter(m => m.estado === 'Eliminada').length || 22, color: '#10b981' }
                                             ]}
                                             cx="50%"
                                             cy="50%"
-                                            innerRadius={60}
+                                            innerRadius={70}
                                             outerRadius={100}
                                             paddingAngle={5}
                                             dataKey="value"
-                                            label={({ name, percent }) => `${name}\n${(percent * 100).toFixed(0)}%`}
-                                            labelLine={false}
+                                            label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                                            labelLine={true}
                                         >
                                             {[
-                                                { color: '#fbbf24' },
-                                                { color: '#3b82f6' },
+                                                { color: '#ef4444' },
+                                                { color: '#f59e0b' },
                                                 { color: '#10b981' }
                                             ].map((entry, index) => (
                                                 <Cell 
                                                     key={`cell-${index}`} 
                                                     fill={entry.color}
-                                                    stroke="rgba(255,255,255,0.8)"
-                                                    strokeWidth={2}
                                                 />
                                             ))}
                                         </Pie>
                                         <RechartsTooltip 
                                             contentStyle={{ 
-                                                backgroundColor: 'rgba(0,0,0,0.8)', 
-                                                border: 'none', 
-                                                borderRadius: '8px',
-                                                color: 'white'
+                                                backgroundColor: '#ffffff', 
+                                                border: '1px solid #e5e7eb', 
+                                                borderRadius: '8px'
                                             }}
                                         />
                                     </PieChart>
@@ -824,179 +815,194 @@ const DashboardPage: React.FC = () => {
                         </Card>
                     </Box>
 
-                    {/* Nueva gráfica - Análisis de Rendimiento por Sectores */}
-                    <Card sx={{ mb: 3, background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' }}>
-                        <CardContent>
-                            <Typography variant="h6" sx={{ mb: 2, color: 'white', fontWeight: 600 }}>
-                                📍 Rendimiento por Sectores del Campo
-                            </Typography>
-                            <ResponsiveContainer width="100%" height={350}>
-                                <ScatterChart data={[
-                                    { sector: 'Sector A', x: 120, y: 85, malezas: malezas.filter(m => m.ubicacion?.includes('A')).length || 15, area: 25 },
-                                    { sector: 'Sector B', x: 180, y: 92, malezas: malezas.filter(m => m.ubicacion?.includes('B')).length || 8, area: 30 },
-                                    { sector: 'Sector C', x: 150, y: 78, malezas: malezas.filter(m => m.ubicacion?.includes('C')).length || 22, area: 20 },
-                                    { sector: 'Sector D', x: 200, y: 88, malezas: malezas.filter(m => m.ubicacion?.includes('D')).length || 12, area: 35 },
-                                    { sector: 'Sector E', x: 90, y: 72, malezas: malezas.filter(m => m.ubicacion?.includes('E')).length || 28, area: 18 },
-                                    { sector: 'Sector F', x: 165, y: 95, malezas: malezas.filter(m => m.ubicacion?.includes('F')).length || 5, area: 28 }
-                                ]}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.2)" />
-                                    <XAxis 
-                                        type="number" 
-                                        dataKey="x" 
-                                        name="Herbicida (L)" 
-                                        stroke="white"
-                                        label={{ value: 'Herbicida Usado (L)', position: 'insideBottom', offset: -10, fill: 'white' }}
-                                    />
-                                    <YAxis 
-                                        type="number" 
-                                        dataKey="y" 
-                                        name="Eficiencia" 
-                                        stroke="white"
-                                        label={{ value: 'Eficiencia (%)', angle: -90, position: 'insideLeft', fill: 'white' }}
-                                    />
-                                    <RechartsTooltip 
-                                        cursor={{ strokeDasharray: '3 3' }}
-                                        contentStyle={{ 
-                                            backgroundColor: 'rgba(0,0,0,0.8)', 
-                                            border: 'none', 
-                                            borderRadius: '8px',
-                                            color: 'white'
-                                        }}
-                                        formatter={(value, name) => {
-                                            if (name === 'x') return [value + ' L', 'Herbicida'];
-                                            if (name === 'y') return [value + '%', 'Eficiencia'];
-                                            return [value, name];
-                                        }}
-                                    />
-                                    <Scatter 
-                                        name="Sectores" 
-                                        dataKey="area" 
-                                        fill="#fbbf24"
-                                        stroke="rgba(255,255,255,0.8)"
-                                        strokeWidth={2}
-                                    />
-                                    <ReferenceLine x={150} stroke="rgba(255,255,255,0.5)" strokeDasharray="5 5" />
-                                    <ReferenceLine y={85} stroke="rgba(255,255,255,0.5)" strokeDasharray="5 5" />
-                                </ScatterChart>
-                            </ResponsiveContainer>
-                        </CardContent>
-                    </Card>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 4, mb: 4 }}>
+                        {/* Gráfico 4 - Rendimiento por Sectores */}
+                        <Card sx={{ borderTop: '4px solid #8b5cf6', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+                            <CardContent>
+                                <Typography variant="h6" sx={{ mb: 3, color: '#374151', fontWeight: 600, display: 'flex', alignItems: 'center' }}>
+                                    <TerrainIcon sx={{ mr: 1, color: '#8b5cf6' }} />
+                                    Rendimiento por Sectores
+                                </Typography>
+                                <ResponsiveContainer width="100%" height={300}>
+                                    <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                                        <XAxis 
+                                            type="number" 
+                                            dataKey="x" 
+                                            name="Herbicida Usado" 
+                                            stroke="#6b7280"
+                                            unit="L"
+                                        />
+                                        <YAxis 
+                                            type="number" 
+                                            dataKey="y" 
+                                            name="Eficiencia" 
+                                            stroke="#6b7280"
+                                            unit="%"
+                                        />
+                                        <RechartsTooltip 
+                                            cursor={{ strokeDasharray: '3 3' }}
+                                            contentStyle={{ 
+                                                backgroundColor: '#ffffff', 
+                                                border: '1px solid #e5e7eb', 
+                                                borderRadius: '8px'
+                                            }}
+                                        />
+                                        <Scatter 
+                                            name="Sectores" 
+                                            data={[
+                                                { sector: 'Sector A', x: 120, y: 85, z: 25, color: '#10b981' },
+                                                { sector: 'Sector B', x: 180, y: 92, z: 30, color: '#3b82f6' },
+                                                { sector: 'Sector C', x: 150, y: 78, z: 20, color: '#f59e0b' },
+                                                { sector: 'Sector D', x: 200, y: 88, z: 35, color: '#ef4444' },
+                                                { sector: 'Sector E', x: 90, y: 72, z: 18, color: '#8b5cf6' },
+                                                { sector: 'Sector F', x: 165, y: 95, z: 28, color: '#ec4899' }
+                                            ]}
+                                        >
+                                            {
+                                                [
+                                                    { color: '#10b981' }, { color: '#3b82f6' }, { color: '#f59e0b' },
+                                                    { color: '#ef4444' }, { color: '#8b5cf6' }, { color: '#ec4899' }
+                                                ].map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={entry.color} />
+                                                ))
+                                            }
+                                        </Scatter>
+                                    </ScatterChart>
+                                </ResponsiveContainer>
+                            </CardContent>
+                        </Card>
 
-                    {/* Nueva gráfica - Radar de Métricas de Calidad */}
-                    <Card sx={{ mb: 3, background: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)' }}>
-                        <CardContent>
-                            <Typography variant="h6" sx={{ mb: 2, color: '#2d3748', fontWeight: 600 }}>
-                                🎯 Análisis Multidimensional de Calidad
-                            </Typography>
-                            <ResponsiveContainer width="100%" height={400}>
-                                <RadarChart data={[
-                                    { metric: 'Precisión', actual: Math.min(92, robots.filter(r => r.estado === 'En Operación').length * 10 || 92), objetivo: 95 },
-                                    { metric: 'Cobertura', actual: Math.min(88, jornadas.filter(j => j.estado === 'Completada').length * 15 || 88), objetivo: 90 },
-                                    { metric: 'Velocidad', actual: 85, objetivo: 85 },
-                                    { metric: 'Eficiencia', actual: Math.min(91, (robots.length > 0 ? robots.filter(r => r.estado === 'En Operación').length / robots.length * 100 : 91)), objetivo: 93 },
-                                    { metric: 'Autonomía', actual: Math.min(87, tanques.length > 0 ? tanques.reduce((sum, t) => sum + (t.nivel_actual || 0), 0) / tanques.length : 87), objetivo: 90 },
-                                    { metric: 'Mantenimiento', actual: Math.min(94, robots.length > 0 ? (robots.length - robots.filter(r => r.estado === 'Mantenimiento').length) / robots.length * 100 : 94), objetivo: 95 }
-                                ]}>
-                                    <PolarGrid stroke="#4a5568" />
-                                    <PolarAngleAxis dataKey="metric" tick={{ fill: '#2d3748', fontSize: 12 }} />
-                                    <PolarRadiusAxis 
-                                        angle={90} 
-                                        domain={[0, 100]} 
-                                        tick={{ fill: '#4a5568', fontSize: 10 }}
-                                    />
-                                    <Radar
-                                        name="Rendimiento Actual"
-                                        dataKey="actual"
-                                        stroke="#3b82f6"
-                                        fill="rgba(59, 130, 246, 0.3)"
-                                        strokeWidth={3}
-                                        dot={{ fill: '#3b82f6', strokeWidth: 2, r: 6 }}
-                                    />
-                                    <Radar
-                                        name="Objetivo"
-                                        dataKey="objetivo"
-                                        stroke="#ef4444"
-                                        fill="rgba(239, 68, 68, 0.1)"
-                                        strokeWidth={2}
-                                        strokeDasharray="5 5"
-                                        dot={{ fill: '#ef4444', strokeWidth: 2, r: 4 }}
-                                    />
-                                    <Legend 
-                                        wrapperStyle={{ color: '#2d3748' }}
-                                    />
-                                    <RechartsTooltip 
-                                        contentStyle={{ 
-                                            backgroundColor: 'rgba(45, 55, 72, 0.9)', 
-                                            border: 'none', 
-                                            borderRadius: '8px',
-                                            color: 'white'
-                                        }}
-                                    />
-                                </RadarChart>
-                            </ResponsiveContainer>
-                        </CardContent>
-                    </Card>
+                        {/* Gráfico 5 - Radar de Calidad */}
+                        <Card sx={{ borderTop: '4px solid #14b8a6', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+                            <CardContent>
+                                <Typography variant="h6" sx={{ mb: 3, color: '#374151', fontWeight: 600, display: 'flex', alignItems: 'center' }}>
+                                    <CheckCircleIcon sx={{ mr: 1, color: '#14b8a6' }} />
+                                    Métricas de Calidad
+                                </Typography>
+                                <ResponsiveContainer width="100%" height={300}>
+                                    <RadarChart outerRadius={90} data={[
+                                        { metric: 'Precisión', actual: Math.min(92, robots.filter(r => r.estado === 'En Operación').length * 10 || 92), objetivo: 95 },
+                                        { metric: 'Cobertura', actual: Math.min(88, jornadas.filter(j => j.estado === 'Completada').length * 15 || 88), objetivo: 90 },
+                                        { metric: 'Velocidad', actual: 85, objetivo: 85 },
+                                        { metric: 'Eficiencia', actual: Math.min(91, (robots.length > 0 ? robots.filter(r => r.estado === 'En Operación').length / robots.length * 100 : 91)), objetivo: 93 },
+                                        { metric: 'Autonomía', actual: Math.min(87, tanques.length > 0 ? tanques.reduce((sum, t) => sum + (t.nivel_actual || 0), 0) / tanques.length : 87), objetivo: 90 },
+                                        { metric: 'Mantenimiento', actual: Math.min(94, robots.length > 0 ? (robots.length - robots.filter(r => r.estado === 'Mantenimiento').length) / robots.length * 100 : 94), objetivo: 95 }
+                                    ]}>
+                                        <PolarGrid stroke="#e0e0e0" />
+                                        <PolarAngleAxis dataKey="metric" tick={{ fill: '#6b7280', fontSize: 12 }} />
+                                        <PolarRadiusAxis angle={90} domain={[0, 100]} tick={{ fill: '#9ca3af', fontSize: 10 }} />
+                                        <Radar
+                                            name="Rendimiento Actual"
+                                            dataKey="actual"
+                                            stroke="#14b8a6"
+                                            fill="#14b8a6"
+                                            fillOpacity={0.4}
+                                        />
+                                        <Radar
+                                            name="Objetivo"
+                                            dataKey="objetivo"
+                                            stroke="#94a3b8"
+                                            fill="#94a3b8"
+                                            fillOpacity={0.2}
+                                            strokeDasharray="5 5"
+                                        />
+                                        <Legend wrapperStyle={{ paddingTop: '10px' }} />
+                                        <RechartsTooltip 
+                                            contentStyle={{ 
+                                                backgroundColor: '#ffffff', 
+                                                border: '1px solid #e5e7eb', 
+                                                borderRadius: '8px'
+                                            }}
+                                        />
+                                    </RadarChart>
+                                </ResponsiveContainer>
+                            </CardContent>
+                        </Card>
+                    </Box>
 
-                    {/* Gráfico de área - Nivel de tanques */}
-                    <Card sx={{ mb: 3 }}>
-                        <CardContent>
-                            <Typography variant="h6" sx={{ mb: 2 }}>Capacidad de Tanques</Typography>
-                            <ResponsiveContainer width="100%" height={300}>
-                                <AreaChart data={tanques.map((tanque, index) => ({
-                                    nombre: tanque.nombre || `Tanque ${index + 1}`,
-                                    capacidad: tanque.capacidad_total || tanque.capacidad,
-                                    actual: tanque.nivel_actual,
-                                    porcentaje: ((tanque.nivel_actual || 0) / (tanque.capacidad_total || tanque.capacidad || 1)) * 100
-                                }))}>
-                                    <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis dataKey="nombre" />
-                                    <YAxis />
-                                    <RechartsTooltip formatter={(value, name) => {
-                                        if (name === 'capacidad') return [`${value} L`, 'Capacidad Total'];
-                                        if (name === 'actual') return [`${value} L`, 'Nivel Actual'];
-                                        return [value, name];
-                                    }} />
-                                    <Area
-                                        type="monotone"
-                                        dataKey="capacidad"
-                                        stackId="1"
-                                        stroke={theme.palette.info.main}
-                                        fill={`${theme.palette.info.main}30`}
-                                        name="capacidad"
-                                    />
-                                    <Area
-                                        type="monotone"
-                                        dataKey="actual"
-                                        stackId="2"
-                                        stroke={theme.palette.success.main}
-                                        fill={theme.palette.success.main}
-                                        name="actual"
-                                    />
-                                </AreaChart>
-                            </ResponsiveContainer>
-                        </CardContent>
-                    </Card>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 4 }}>
+                        {/* Gráfico 6 - Nivel de tanques */}
+                        <Card sx={{ borderTop: '4px solid #0ea5e9', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+                            <CardContent>
+                                <Typography variant="h6" sx={{ mb: 3, color: '#374151', fontWeight: 600, display: 'flex', alignItems: 'center' }}>
+                                    <WaterDropIcon sx={{ mr: 1, color: '#0ea5e9' }} />
+                                    Capacidad de Tanques
+                                </Typography>
+                                <ResponsiveContainer width="100%" height={250}>
+                                    <AreaChart data={tanques.map((tanque, index) => ({
+                                        nombre: tanque.nombre || `Tanque ${index + 1}`,
+                                        capacidad: tanque.capacidad_total || tanque.capacidad,
+                                        actual: tanque.nivel_actual,
+                                    }))} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" vertical={false} />
+                                        <XAxis dataKey="nombre" stroke="#6b7280" axisLine={false} tickLine={false} />
+                                        <YAxis stroke="#6b7280" axisLine={false} tickLine={false} />
+                                        <RechartsTooltip 
+                                            contentStyle={{ 
+                                                backgroundColor: '#ffffff', 
+                                                border: '1px solid #e5e7eb', 
+                                                borderRadius: '8px'
+                                            }}
+                                        />
+                                        <Area
+                                            type="monotone"
+                                            dataKey="capacidad"
+                                            stroke="#bae6fd"
+                                            fill="#bae6fd"
+                                            name="Capacidad Total (L)"
+                                        />
+                                        <Area
+                                            type="monotone"
+                                            dataKey="actual"
+                                            stroke="#0ea5e9"
+                                            fill="#0ea5e9"
+                                            name="Nivel Actual (L)"
+                                        />
+                                    </AreaChart>
+                                </ResponsiveContainer>
+                            </CardContent>
+                        </Card>
 
-                    {/* Gráfico de barras - Jornadas por estado */}
-                    <Card>
-                        <CardContent>
-                            <Typography variant="h6" sx={{ mb: 2 }}>Progreso de Jornadas</Typography>
-                            <ResponsiveContainer width="100%" height={300}>
-                                <BarChart data={[
-                                    { estado: 'Completadas', cantidad: jornadas.filter(j => j.estado === 'Completada').length },
-                                    { estado: 'En Progreso', cantidad: jornadas.filter(j => j.estado === 'En Progreso').length },
-                                    { estado: 'Pausadas', cantidad: jornadas.filter(j => j.estado === 'Pausada').length },
-                                    { estado: 'Programadas', cantidad: jornadas.filter(j => j.estado === 'Programada').length }
-                                ]}>
-                                    <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis dataKey="estado" />
-                                    <YAxis />
-                                    <RechartsTooltip />
-                                    <Bar dataKey="cantidad" fill={theme.palette.warning.main} />
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </CardContent>
-                    </Card>
+                        {/* Gráfico 7 - Jornadas por estado */}
+                        <Card sx={{ borderTop: '4px solid #6366f1', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+                            <CardContent>
+                                <Typography variant="h6" sx={{ mb: 3, color: '#374151', fontWeight: 600, display: 'flex', alignItems: 'center' }}>
+                                    <TimelineIcon sx={{ mr: 1, color: '#6366f1' }} />
+                                    Progreso de Jornadas
+                                </Typography>
+                                <ResponsiveContainer width="100%" height={250}>
+                                    <BarChart data={[
+                                        { estado: 'Completadas', cantidad: jornadas.filter(j => j.estado === 'Completada').length, color: '#10b981' },
+                                        { estado: 'En Progreso', cantidad: jornadas.filter(j => j.estado === 'En Progreso').length, color: '#3b82f6' },
+                                        { estado: 'Pausadas', cantidad: jornadas.filter(j => j.estado === 'Pausada').length, color: '#f59e0b' },
+                                        { estado: 'Programadas', cantidad: jornadas.filter(j => j.estado === 'Programada').length, color: '#6366f1' }
+                                    ]} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" vertical={false} />
+                                        <XAxis dataKey="estado" stroke="#6b7280" axisLine={false} tickLine={false} />
+                                        <YAxis stroke="#6b7280" axisLine={false} tickLine={false} />
+                                        <RechartsTooltip 
+                                            cursor={{fill: 'transparent'}}
+                                            contentStyle={{ 
+                                                backgroundColor: '#ffffff', 
+                                                border: '1px solid #e5e7eb', 
+                                                borderRadius: '8px'
+                                            }}
+                                        />
+                                        <Bar dataKey="cantidad" radius={[4, 4, 0, 0]} maxBarSize={50}>
+                                            {
+                                                [
+                                                    { color: '#10b981' }, { color: '#3b82f6' }, { color: '#f59e0b' }, { color: '#6366f1' }
+                                                ].map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={entry.color} />
+                                                ))
+                                            }
+                                        </Bar>
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </CardContent>
+                        </Card>
+                    </Box>
                 </Box>
             )}
 
