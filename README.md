@@ -157,6 +157,3 @@ Aspersax_api/
 | GET | `/api/dashboard/stats/` | Estadísticas del dashboard |
 | GET | `/api/reportes/` | Listar reportes |
 
-## Autores
-
-Proyecto desarrollado como parte de la materia Sistemas de Información - Sexto Semestre.
