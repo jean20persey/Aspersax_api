@@ -1,10 +1,41 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Snackbar } from '@mui/material';
+import { 
+    Container, 
+    Typography, 
+    Box, 
+    Card, 
+    CardContent, 
+    Button, 
+    IconButton, 
+    Tooltip, 
+    Chip, 
+    Table, 
+    TableBody, 
+    TableCell, 
+    TableContainer, 
+    TableHead, 
+    TableRow, 
+    Paper,
+    Snackbar,
+    Alert,
+    LinearProgress
+} from '@mui/material';
+import { 
+    WaterDrop as TanqueIcon, 
+    Add as AddIcon, 
+    Edit as EditIcon, 
+    Delete as DeleteIcon, 
+    Refresh as RefreshIcon,
+    Opacity as OpacityIcon
+} from '@mui/icons-material';
 import { tanquesService, Tanque } from '../services/api';
 import TanqueForm, { TanqueFormData } from '../components/TanqueForm';
+import ReadOnlyModeAlert from '../components/ReadOnlyModeAlert';
+import { ConditionalButton, ConditionalIconButton } from '../components/ConditionalButton';
 
 const TanquesPage: React.FC = () => {
     const [tanques, setTanques] = useState<Tanque[]>([]);
+    const [loading, setLoading] = useState(true);
     const [openForm, setOpenForm] = useState(false);
     const [editingTanque, setEditingTanque] = useState<Tanque | null>(null);
     const [alert, setAlert] = useState({
@@ -14,6 +45,7 @@ const TanquesPage: React.FC = () => {
     });
 
     const fetchTanques = async () => {
+        setLoading(true);
         try {
             const response = await tanquesService.getAll();
             const data = response.data;
@@ -29,6 +61,8 @@ const TanquesPage: React.FC = () => {
                 message: 'Error al cargar los tanques del servidor',
                 severity: 'error'
             });
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -59,20 +93,12 @@ const TanquesPage: React.FC = () => {
             fetchTanques();
         } catch (error: any) {
             console.error('Error al procesar el tanque:', error);
-            const errorMsg = error.response?.data 
-                ? JSON.stringify(error.response.data) 
-                : (editingTanque ? 'Error al actualizar el tanque' : 'Error al agregar el tanque');
             setAlert({
                 open: true,
-                message: errorMsg,
+                message: 'Error al procesar la solicitud',
                 severity: 'error'
             });
         }
-    };
-
-    const handleEditTanque = (tanque: Tanque) => {
-        setEditingTanque(tanque);
-        setOpenForm(true);
     };
 
     const handleDeleteTanque = async (tanqueId: number) => {
@@ -86,7 +112,6 @@ const TanquesPage: React.FC = () => {
                 });
                 fetchTanques();
             } catch (error) {
-                console.error('Error al eliminar el tanque:', error);
                 setAlert({
                     open: true,
                     message: 'Error al eliminar el tanque',
@@ -98,136 +123,136 @@ const TanquesPage: React.FC = () => {
 
     const getEstadoColor = (estado: string) => {
         switch (estado) {
-            case 'Lleno':
-                return '#22c55e';
-            case 'Medio':
-                return '#f59e0b';
-            case 'Bajo':
-                return '#ef4444';
-            case 'Vacío':
-                return '#6b7280';
-            default:
-                return '#6b7280';
+            case 'Lleno': return 'success';
+            case 'Medio': return 'warning';
+            case 'Bajo': return 'error';
+            case 'Vacío': return 'default';
+            default: return 'default';
         }
     };
 
     return (
-        <div style={{ padding: '20px', backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
-            <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '20px', color: '#1f2937' }}>
-                Tanques
-            </h1>
-            
-            <button 
-                onClick={() => {
-                    setEditingTanque(null);
-                    setOpenForm(true);
-                }}
-                style={{
-                    backgroundColor: '#22c55e',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    padding: '12px 24px',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    marginBottom: '20px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                }}
-            >
-                + Nuevo Tanque
-            </button>
+        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+                <Box>
+                    <Typography variant="h4" component="h1" sx={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <TanqueIcon color="primary" sx={{ fontSize: 40 }} />
+                        Gestión de Tanques
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary">
+                        Control de inventario de herbicidas y nivel de tanques.
+                    </Typography>
+                </Box>
+                
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                    <Tooltip title="Actualizar">
+                        <IconButton onClick={fetchTanques} disabled={loading}>
+                            <RefreshIcon />
+                        </IconButton>
+                    </Tooltip>
+                    
+                    <ConditionalButton 
+                        permission="canManageTanques"
+                        variant="contained" 
+                        startIcon={<AddIcon />}
+                        onClick={() => {
+                            setEditingTanque(null);
+                            setOpenForm(true);
+                        }}
+                    >
+                        Nuevo Tanque
+                    </ConditionalButton>
+                </Box>
+            </Box>
 
-            {tanques.length === 0 ? (
-                <p>No hay tanques disponibles</p>
-            ) : (
-                <div style={{ 
-                    backgroundColor: 'white', 
-                    borderRadius: '12px', 
-                    boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
-                    overflow: 'hidden'
-                }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                        <thead>
-                            <tr style={{ backgroundColor: '#f8fafc' }}>
-                                <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>ID</th>
-                                <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Nombre</th>
-                                <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Capacidad</th>
-                                <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Nivel Actual</th>
-                                <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Estado</th>
-                                <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Última Recarga</th>
-                                <th style={{ padding: '16px', textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#374151', fontWeight: '600' }}>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {tanques.map((tanque, index) => (
-                                <tr 
-                                    key={tanque.id_tanque}
-                                    style={{ 
-                                        borderBottom: index === tanques.length - 1 ? 'none' : '1px solid #e5e7eb'
-                                    }}
-                                >
-                                    <td style={{ padding: '16px', color: '#374151' }}>{tanque.id_tanque}</td>
-                                    <td style={{ padding: '16px', color: '#374151', fontWeight: '500' }}>{tanque.nombre}</td>
-                                    <td style={{ padding: '16px', color: '#374151' }}>{tanque.capacidad}L</td>
-                                    <td style={{ padding: '16px', color: '#374151' }}>
-                                        {tanque.nivel_actual}L ({Math.round((tanque.nivel_actual / tanque.capacidad) * 100)}%)
-                                    </td>
-                                    <td style={{ padding: '16px' }}>
-                                        <span style={{
-                                            padding: '4px 12px',
-                                            borderRadius: '16px',
-                                            fontSize: '12px',
-                                            fontWeight: '500',
-                                            backgroundColor: `${getEstadoColor(tanque.estado)}20`,
-                                            color: getEstadoColor(tanque.estado)
-                                        }}>
-                                            {tanque.estado}
-                                        </span>
-                                    </td>
-                                    <td style={{ padding: '16px', color: '#6b7280' }}>
-                                        {new Date(tanque.ultima_recarga).toLocaleString()}
-                                    </td>
-                                    <td style={{ padding: '16px' }}>
-                                        <div style={{ display: 'flex', gap: '8px' }}>
-                                            <button
-                                                onClick={() => handleEditTanque(tanque)}
-                                                style={{
-                                                    backgroundColor: '#3b82f6',
-                                                    color: 'white',
-                                                    border: 'none',
-                                                    borderRadius: '6px',
-                                                    padding: '6px 12px',
-                                                    fontSize: '12px',
-                                                    cursor: 'pointer'
-                                                }}
-                                            >
-                                                Editar
-                                            </button>
-                                            <button
-                                                onClick={() => handleDeleteTanque(tanque.id_tanque)}
-                                                style={{
-                                                    backgroundColor: '#ef4444',
-                                                    color: 'white',
-                                                    border: 'none',
-                                                    borderRadius: '6px',
-                                                    padding: '6px 12px',
-                                                    fontSize: '12px',
-                                                    cursor: 'pointer'
-                                                }}
-                                            >
-                                                Eliminar
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
+            <ReadOnlyModeAlert featureName="los tanques y niveles de herbicida" />
+
+            <Card sx={{ borderRadius: '16px', overflow: 'hidden' }}>
+                <TableContainer component={Paper} elevation={0}>
+                    {loading && <LinearProgress sx={{ height: 4 }} />}
+                    <Table>
+                        <TableHead>
+                            <TableRow sx={{ backgroundColor: 'rgba(0,0,0,0.02)' }}>
+                                <TableCell sx={{ fontWeight: 700 }}>ID</TableCell>
+                                <TableCell sx={{ fontWeight: 700 }}>Nombre</TableCell>
+                                <TableCell sx={{ fontWeight: 700 }}>Capacidad</TableCell>
+                                <TableCell sx={{ fontWeight: 700 }}>Nivel Actual</TableCell>
+                                <TableCell sx={{ fontWeight: 700 }}>Estado</TableCell>
+                                <TableCell sx={{ fontWeight: 700 }}>Última Recarga</TableCell>
+                                <TableCell align="right" sx={{ fontWeight: 700 }}>Acciones</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {tanques.length === 0 && !loading ? (
+                                <TableRow>
+                                    <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
+                                        No hay tanques registrados.
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                tanques.map((tanque) => (
+                                    <TableRow key={tanque.id_tanque} hover>
+                                        <TableCell>{tanque.id_tanque}</TableCell>
+                                        <TableCell sx={{ fontWeight: 600 }}>{tanque.nombre}</TableCell>
+                                        <TableCell>{tanque.capacidad}L</TableCell>
+                                        <TableCell>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                <Typography variant="body2">{tanque.nivel_actual}L</Typography>
+                                                <Box sx={{ flexGrow: 1, minWidth: 50 }}>
+                                                    <LinearProgress 
+                                                        variant="determinate" 
+                                                        value={(tanque.nivel_actual / tanque.capacidad) * 100} 
+                                                        color={getEstadoColor(tanque.estado) as any}
+                                                        sx={{ height: 6, borderRadius: 3 }}
+                                                    />
+                                                </Box>
+                                                <Typography variant="caption" color="text.secondary">
+                                                    {Math.round((tanque.nivel_actual / tanque.capacidad) * 100)}%
+                                                </Typography>
+                                            </Box>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Chip 
+                                                label={tanque.estado} 
+                                                color={getEstadoColor(tanque.estado) as any}
+                                                size="small"
+                                                variant="outlined"
+                                                sx={{ fontWeight: 600 }}
+                                            />
+                                        </TableCell>
+                                        <TableCell sx={{ color: 'text.secondary', fontSize: '0.85rem' }}>
+                                            {new Date(tanque.ultima_recarga).toLocaleString()}
+                                        </TableCell>
+                                        <TableCell align="right">
+                                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                                                <ConditionalIconButton 
+                                                    permission="canManageTanques"
+                                                    size="small" 
+                                                    color="primary"
+                                                    onClick={() => {
+                                                        setEditingTanque(tanque);
+                                                        setOpenForm(true);
+                                                    }}
+                                                >
+                                                    <EditIcon fontSize="small" />
+                                                </ConditionalIconButton>
+                                                <ConditionalIconButton 
+                                                    permission="canManageTanques"
+                                                    size="small" 
+                                                    color="error"
+                                                    onClick={() => handleDeleteTanque(tanque.id_tanque)}
+                                                >
+                                                    <DeleteIcon fontSize="small" />
+                                                </ConditionalIconButton>
+                                            </Box>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            </Card>
 
             <TanqueForm
                 open={openForm}
@@ -252,12 +277,12 @@ const TanquesPage: React.FC = () => {
                 <Alert
                     onClose={() => setAlert({ ...alert, open: false })}
                     severity={alert.severity}
-                    sx={{ width: '100%' }}
+                    sx={{ width: '100%', borderRadius: '8px' }}
                 >
                     {alert.message}
                 </Alert>
             </Snackbar>
-        </div>
+        </Container>
     );
 };
 

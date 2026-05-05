@@ -22,15 +22,18 @@ class AuthService {
             const response = await axios.post<LoginResponse>('/token/', credentials);
             console.log('Respuesta del login:', response.data);
             
-            if (response.data.access) {  // JWT devuelve 'access' y 'refresh'
+            if (response.data.access) {  // JWT devuelve 'access', 'refresh' y 'user'
                 const userData = {
                     token: response.data.access,
                     refresh: response.data.refresh,
-                    user: credentials.username
+                    user: response.data.user?.username || credentials.username,
+                    role: response.data.user?.rol || 'viewer',
+                    full_name: response.data.user?.full_name || '',
+                    email: response.data.user?.email || ''
                 };
                 localStorage.setItem('user', JSON.stringify(userData));
-                localStorage.setItem('token', response.data.access); // También guardar como 'token' para compatibilidad
-                console.log('Token guardado en localStorage:', response.data.access);
+                localStorage.setItem('token', response.data.access);
+                console.log('Datos de usuario guardados en localStorage:', userData);
                 return userData;
             }
             throw new Error('Token no recibido');

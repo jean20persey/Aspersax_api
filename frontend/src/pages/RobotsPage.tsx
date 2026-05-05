@@ -1,253 +1,280 @@
-import { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  Alert,
-  Snackbar,
+    Container,
+    Typography,
+    Box,
+    Card,
+    CardContent,
+    Chip,
+    Button,
+    IconButton,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    TextField,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
+    Tooltip,
+    CircularProgress,
+    Skeleton,
+    Snackbar,
+    Alert
 } from '@mui/material';
-import { robotsService, Robot } from '../services/api';
-import RobotForm, { RobotFormData } from '../components/RobotForm';
+import {
+    SmartToy as RobotIcon,
+    Settings as SettingsIcon,
+    PlayArrow as StartIcon,
+    Stop as StopIcon,
+    Visibility as ViewIcon,
+    Battery3Bar as BatteryIcon,
+    Add as AddIcon,
+    Refresh as RefreshIcon,
+    Speed as SpeedIcon
+} from '@mui/icons-material';
+import { usePermissions } from '../hooks/usePermissions';
+import ProtectedComponent from '../components/ProtectedComponent';
+import { ConditionalButton, ConditionalIconButton } from '../components/ConditionalButton';
+import ReadOnlyModeAlert from '../components/ReadOnlyModeAlert';
+import robotsService from '../services/robotsService';
+
+interface Robot {
+    id_robot: number;
+    nombre: string;
+    estado: 'Disponible' | 'En Mantenimiento' | 'En Operación' | 'Fuera de Servicio';
+    bateria: number;
+    ultima_actividad: string;
+    activo: boolean;
+}
 
 const RobotsPage: React.FC = () => {
-  const [robots, setRobots] = useState<Robot[]>([]);
-  const [openForm, setOpenForm] = useState(false);
-  const [editingRobot, setEditingRobot] = useState<Robot | null>(null);
-  const [alert, setAlert] = useState({
-    open: false,
-    message: '',
-    severity: 'success' as 'success' | 'error' | 'warning'
-  });
+    const [robots, setRobots] = useState<Robot[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [selectedRobot, setSelectedRobot] = useState<Robot | null>(null);
+    const [openControlDialog, setOpenControlDialog] = useState(false);
+    const [openConfigDialog, setOpenConfigDialog] = useState(false);
+    const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
+    
+    const userRole = usePermissions();
 
-  const fetchRobots = async () => {
-    try {
-      const response = await robotsService.getAll();
-      // La API puede devolver un array directo o paginado con .results
-      const data = response.data;
-      if (Array.isArray(data)) {
-        setRobots(data);
-      } else if (data && (data as any).results) {
-        setRobots((data as any).results);
-      }
-    } catch (error) {
-      console.error('Error al cargar los robots:', error);
-      setAlert({
-        open: true,
-        message: 'Error al cargar los robots del servidor',
-        severity: 'error'
-      });
+    useEffect(() => {
+        cargarRobots();
+    }, []);
+
+    const cargarRobots = async () => {
+        setLoading(true);
+        try {
+            const response = await robotsService.getAll();
+            // La API puede devolver results si está paginada
+            const data = response.data.results || response.data;
+            setRobots(Array.isArray(data) ? data : []);
+        } catch (error) {
+            console.error('Error al cargar robots:', error);
+            setSnackbar({ open: true, message: 'Error al conectar con el servidor', severity: 'error' });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleControlRobot = (robot: Robot, accion: 'iniciar' | 'detener') => {
+        console.log(`${accion} robot:`, robot.nombre);
+        // Lógica de control simulada o real
+        setSnackbar({ 
+            open: true, 
+            message: `Acción '${accion}' enviada al robot ${robot.nombre}`, 
+            severity: 'success' 
+        });
+        setOpenControlDialog(false);
+    };
+
+    const getEstadoColor = (estado: string) => {
+        switch (estado) {
+            case 'En Operación': return 'success';
+            case 'En Mantenimiento': return 'warning';
+            case 'Fuera de Servicio': return 'error';
+            case 'Disponible': return 'info';
+            default: return 'default';
+        }
+    };
+
+    const getBateriaColor = (bateria: number) => {
+        if (bateria > 60) return 'success';
+        if (bateria > 30) return 'warning';
+        return 'error';
+    };
+
+    if (!userRole && loading) {
+        return (
+            <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
+                    <CircularProgress />
+                </Box>
+            </Container>
+        );
     }
-  };
 
-  useEffect(() => {
-    fetchRobots();
-  }, []);
+    return (
+        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                <Box>
+                    <Typography variant="h4" component="h1" sx={{ display: 'flex', alignItems: 'center', fontWeight: 700, mb: 1 }}>
+                        <RobotIcon sx={{ mr: 2, fontSize: '2.5rem', color: 'primary.main' }} />
+                        Gestión de Robots
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary">
+                        Monitoreo y control de la flota de robots aspersores.
+                    </Typography>
+                </Box>
+                
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Tooltip title="Actualizar lista">
+                        <IconButton onClick={cargarRobots} color="primary" disabled={loading}>
+                            <RefreshIcon />
+                        </IconButton>
+                    </Tooltip>
+                    
+                    <ConditionalButton
+                        permission="canControlRobots"
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        onClick={() => console.log('Agregar robot')}
+                    >
+                        Nuevo Robot
+                    </ConditionalButton>
+                </Box>
+            </Box>
 
-  const handleAddRobot = async (robotData: RobotFormData) => {
-    try {
-      if (editingRobot) {
-        // Editar robot existente via API
-        await robotsService.update(editingRobot.id_robot, robotData);
-        setAlert({
-          open: true,
-          message: 'Robot actualizado exitosamente',
-          severity: 'success'
-        });
-      } else {
-        // Crear nuevo robot via API
-        await robotsService.create(robotData);
-        setAlert({
-          open: true,
-          message: 'Robot agregado exitosamente',
-          severity: 'success'
-        });
-      }
-      
-      setOpenForm(false);
-      setEditingRobot(null);
-      fetchRobots(); // Recargar desde el servidor
-    } catch (error: any) {
-      console.error('Error al procesar el robot:', error);
-      const errorMsg = error.response?.data 
-        ? JSON.stringify(error.response.data) 
-        : (editingRobot ? 'Error al actualizar el robot' : 'Error al agregar el robot');
-      setAlert({
-        open: true,
-        message: errorMsg,
-        severity: 'error'
-      });
-    }
-  };
+            <ReadOnlyModeAlert featureName="los robots aspersores" />
 
-  const handleEditRobot = (robot: Robot) => {
-    setEditingRobot(robot);
-    setOpenForm(true);
-  };
+            {loading ? (
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+                    {[1, 2, 3].map((i) => (
+                        <Skeleton key={i} variant="rectangular" width={345} height={200} sx={{ borderRadius: 4 }} />
+                    ))}
+                </Box>
+            ) : (
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+                    {robots.length === 0 ? (
+                        <Typography variant="body1" sx={{ width: '100%', textAlign: 'center', py: 5 }}>
+                            No se encontraron robots registrados.
+                        </Typography>
+                    ) : (
+                        robots.map((robot) => (
+                            <Box key={`robot-${robot.id_robot}`} sx={{ flex: '1 1 300px', minWidth: '300px', maxWidth: '400px' }}>
+                                <Card sx={{ 
+                                    height: '100%',
+                                    borderRadius: '16px',
+                                    border: robot.estado === 'En Operación' ? '2px solid #4caf50' : '1px solid #e0e0e0',
+                                    boxShadow: robot.estado === 'En Operación' ? '0 4px 20px rgba(76, 175, 80, 0.2)' : 2,
+                                    transition: 'all 0.3s ease',
+                                    '&:hover': {
+                                        transform: 'translateY(-4px)',
+                                        boxShadow: 4
+                                    }
+                                }}>
+                                    <CardContent>
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                                            <Box>
+                                                <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                                                    {robot.nombre}
+                                                </Typography>
+                                                <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
+                                                    <SpeedIcon sx={{ mr: 0.5, fontSize: '0.9rem' }} />
+                                                    ID: {robot.id_robot}
+                                                </Typography>
+                                            </Box>
+                                            <RobotIcon 
+                                                color={robot.estado === 'En Operación' ? 'success' : 'primary'} 
+                                                sx={{ fontSize: '2rem' }} 
+                                            />
+                                        </Box>
 
-  const handleDeleteRobot = async (robotId: number) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar este robot?')) {
-      try {
-        await robotsService.delete(robotId);
-        setAlert({
-          open: true,
-          message: 'Robot eliminado exitosamente',
-          severity: 'success'
-        });
-        fetchRobots();
-      } catch (error: any) {
-        console.error('Error al eliminar el robot:', error);
-        setAlert({
-          open: true,
-          message: 'Error al eliminar el robot',
-          severity: 'error'
-        });
-      }
-    }
-  };
+                                        <Box sx={{ mb: 3, display: 'flex', gap: 1 }}>
+                                            <Chip
+                                                label={robot.estado}
+                                                color={getEstadoColor(robot.estado) as any}
+                                                size="small"
+                                                sx={{ fontWeight: 600 }}
+                                            />
+                                            <Chip
+                                                icon={<BatteryIcon />}
+                                                label={`${robot.bateria}%`}
+                                                color={getBateriaColor(robot.bateria) as any}
+                                                variant="outlined"
+                                                size="small"
+                                                sx={{ fontWeight: 600 }}
+                                            />
+                                        </Box>
 
-  return (
-    <div style={{ padding: '20px', backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
-      <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '20px', color: '#1f2937' }}>
-        Robots
-      </h1>
-      
-      <button 
-        onClick={() => {
-          setEditingRobot(null);
-          setOpenForm(true);
-        }}
-        style={{
-          backgroundColor: '#22c55e',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          padding: '12px 24px',
-          fontSize: '14px',
-          fontWeight: '600',
-          cursor: 'pointer',
-          marginBottom: '20px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px'
-        }}
-      >
-        + Nuevo Robot
-      </button>
+                                        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', pt: 2, borderTop: '1px solid #f0f0f0' }}>
+                                            <Tooltip title="Ver detalles">
+                                                <IconButton size="small" onClick={() => setSelectedRobot(robot)}>
+                                                    <ViewIcon fontSize="small" />
+                                                </IconButton>
+                                            </Tooltip>
 
-      {robots.length === 0 ? (
-        <p>No hay robots disponibles</p>
-      ) : (
-        <div style={{ 
-          backgroundColor: 'white', 
-          borderRadius: '12px', 
-          boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
-          overflow: 'hidden'
-        }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ backgroundColor: '#f8fafc' }}>
-                <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>ID</th>
-                <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Nombre</th>
-                <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Estado</th>
-                <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Batería</th>
-                <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Última Actividad</th>
-                <th style={{ padding: '16px', textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#374151', fontWeight: '600' }}>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Array.isArray(robots) && robots.map((robot, index) => (
-                <tr 
-                  key={robot.id_robot}
-                  style={{ 
-                    borderBottom: index === robots.length - 1 ? 'none' : '1px solid #e5e7eb'
-                  }}
-                >
-                  <td style={{ padding: '16px', color: '#374151' }}>{robot.id_robot}</td>
-                  <td style={{ padding: '16px', color: '#374151', fontWeight: '500' }}>{robot.nombre}</td>
-                  <td style={{ padding: '16px' }}>
-                    <span style={{
-                      padding: '4px 12px',
-                      borderRadius: '16px',
-                      fontSize: '12px',
-                      fontWeight: '500',
-                      backgroundColor: robot.estado === 'Disponible' ? '#dcfce7' : 
-                                     robot.estado === 'En Mantenimiento' ? '#fef3c7' : '#dbeafe',
-                      color: robot.estado === 'Disponible' ? '#166534' : 
-                             robot.estado === 'En Mantenimiento' ? '#92400e' : '#1e40af'
-                    }}>
-                      {robot.estado}
-                    </span>
-                  </td>
-                  <td style={{ padding: '16px', color: '#374151' }}>{robot.bateria}%</td>
-                  <td style={{ padding: '16px', color: '#6b7280' }}>
-                    {new Date(robot.ultima_actividad).toLocaleString()}
-                  </td>
-                  <td style={{ padding: '16px' }}>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <button
-                        onClick={() => handleEditRobot(robot)}
-                        style={{
-                          backgroundColor: '#3b82f6',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '6px',
-                          padding: '6px 12px',
-                          fontSize: '12px',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        Editar
-                      </button>
-                      <button
-                        onClick={() => handleDeleteRobot(robot.id_robot)}
-                        style={{
-                          backgroundColor: '#ef4444',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '6px',
-                          padding: '6px 12px',
-                          fontSize: '12px',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        Eliminar
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+                                            <ConditionalIconButton
+                                                permission="canControlRobots"
+                                                size="small"
+                                                color="primary"
+                                                onClick={() => {
+                                                    setSelectedRobot(robot);
+                                                    setOpenControlDialog(true);
+                                                }}
+                                            >
+                                                {robot.estado === 'En Operación' ? <StopIcon fontSize="small" /> : <StartIcon fontSize="small" />}
+                                            </ConditionalIconButton>
 
-      <RobotForm
-        open={openForm}
-        onClose={() => {
-          setOpenForm(false);
-          setEditingRobot(null);
-        }}
-        onSubmit={handleAddRobot}
-        initialData={editingRobot ? {
-          nombre: editingRobot.nombre,
-          estado: editingRobot.estado as any,
-          bateria: editingRobot.bateria
-        } : undefined}
-        isEditing={!!editingRobot}
-      />
+                                            <ConditionalIconButton
+                                                permission="canControlRobots"
+                                                size="small"
+                                                onClick={() => {
+                                                    setSelectedRobot(robot);
+                                                    setOpenConfigDialog(true);
+                                                }}
+                                            >
+                                                <SettingsIcon fontSize="small" />
+                                            </ConditionalIconButton>
+                                        </Box>
+                                    </CardContent>
+                                </Card>
+                            </Box>
+                        ))
+                    )}
+                </Box>
+            )}
 
-      <Snackbar
-        open={alert.open}
-        autoHideDuration={6000}
-        onClose={() => setAlert({ ...alert, open: false })}
-      >
-        <Alert
-          onClose={() => setAlert({ ...alert, open: false })}
-          severity={alert.severity}
-          sx={{ width: '100%' }}
-        >
-          {alert.message}
-        </Alert>
-      </Snackbar>
-    </div>
-  );
+            {/* Diálogos y Snackbar heredados de la lógica mejorada */}
+            <Dialog open={openControlDialog} onClose={() => setOpenControlDialog(false)}>
+                <DialogTitle sx={{ fontWeight: 700 }}>Control de Robot</DialogTitle>
+                <DialogContent>
+                    <Typography>¿Desea cambiar el estado de operación de <strong>{selectedRobot?.nombre}</strong>?</Typography>
+                </DialogContent>
+                <DialogActions sx={{ p: 2 }}>
+                    <Button onClick={() => setOpenControlDialog(false)}>Cancelar</Button>
+                    <Button 
+                        variant="contained" 
+                        color={selectedRobot?.estado === 'En Operación' ? 'error' : 'success'}
+                        onClick={() => selectedRobot && handleControlRobot(selectedRobot, selectedRobot.estado === 'En Operación' ? 'detener' : 'iniciar')}
+                    >
+                        {selectedRobot?.estado === 'En Operación' ? 'Detener Robot' : 'Iniciar Robot'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            <Snackbar 
+                open={snackbar.open} 
+                autoHideDuration={4000} 
+                onClose={() => setSnackbar({ ...snackbar, open: false })}
+            >
+                <Alert severity={snackbar.severity} sx={{ borderRadius: '8px', width: '100%' }}>
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
+        </Container>
+    );
 };
 
 export default RobotsPage;

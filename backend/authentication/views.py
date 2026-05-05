@@ -12,11 +12,13 @@ from django.utils import timezone
 from .serializers import RegistroUsuarioSerializer, UsuarioSerializer, PerfilUsuarioSerializer
 from .models import CodigoRecuperacion, SolicitudAdministrador
 from .permissions import EsAdministradorPermission
+from .serializers_jwt import CustomTokenObtainPairSerializer
 
 User = get_user_model()
 
 class LoginPersonalizadoView(TokenObtainPairView):
-    """Vista personalizada de login que devuelve errores específicos"""
+    """Vista personalizada de login que devuelve errores específicos y datos de usuario"""
+    serializer_class = CustomTokenObtainPairSerializer
     
     def post(self, request, *args, **kwargs):
         username = request.data.get('username')

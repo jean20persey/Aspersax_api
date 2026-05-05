@@ -18,7 +18,6 @@ import {
     VisibilityOff,
     Person,
     Lock,
-    Agriculture,
 } from '@mui/icons-material';
 import { useNavigate, Link } from 'react-router-dom';
 import authService from '../services/authService';
@@ -107,7 +106,16 @@ const LoginPage: React.FC = () => {
                                     boxShadow: '0 8px 32px rgba(69, 185, 57, 0.3)',
                                     mb: 2
                                 }}>
-                                    <Agriculture sx={{ color: 'white', fontSize: 40 }} />
+                                    <Box 
+                                        component="img" 
+                                        src="/Logo.jpeg" 
+                                        sx={{ 
+                                            width: '100%', 
+                                            height: '100%', 
+                                            objectFit: 'cover',
+                                            borderRadius: '18px' 
+                                        }} 
+                                    />
                                 </Box>
                                 <Typography 
                                     component="h1" 

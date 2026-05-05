@@ -143,7 +143,16 @@ const Navigation = () => {
           boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
           border: '2px solid rgba(255,255,255,0.2)'
         }}>
-          <GrassIcon sx={{ color: 'white', fontSize: 28 }} />
+          <Box 
+            component="img" 
+            src="/Logo.jpeg" 
+            sx={{ 
+              width: '100%', 
+              height: '100%', 
+              objectFit: 'cover',
+              borderRadius: '10px' 
+            }} 
+          />
         </Box>
         <Typography 
           variant="h5" 

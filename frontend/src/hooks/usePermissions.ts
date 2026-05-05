@@ -76,15 +76,33 @@ export const usePermissions = (): UserRole | null => {
 
   useEffect(() => {
     const loadPermissions = async () => {
+      // Intentar cargar desde localStorage primero para rapidez
+      const cachedUserStr = localStorage.getItem('user');
+      if (cachedUserStr) {
+        try {
+          const cachedUser = JSON.parse(cachedUserStr);
+          if (cachedUser.role) {
+            const permissions = getPermissionsByRole(cachedUser.role, cachedUser.isAdmin || false);
+            const isAdmin = cachedUser.role === 'admin' || cachedUser.isAdmin;
+            
+            setUserRole({
+              role: isAdmin ? 'admin' : 'viewer',
+              permissions,
+              isAdmin,
+              isViewer: !isAdmin
+            });
+            setLoading(false);
+            // No retornamos aquí, seguimos para validar con el perfil real en segundo plano
+          }
+        } catch (e) {
+          console.warn('Error parsing cached user:', e);
+        }
+      }
+
       try {
         const profile = await authService.obtenerPerfil();
-        console.log('Perfil obtenido:', profile); // Debug
-        
         const permissions = getPermissionsByRole(profile.rol, profile.is_superuser);
-        console.log('Permisos calculados:', permissions); // Debug
-        
         const isAdmin = profile.rol === 'admin' || profile.is_superuser;
-        console.log('Es admin:', isAdmin); // Debug
         
         setUserRole({
           role: isAdmin ? 'admin' : 'viewer',
@@ -94,7 +112,8 @@ export const usePermissions = (): UserRole | null => {
         });
       } catch (error) {
         console.error('Error loading permissions:', error);
-        setUserRole(null);
+        // Si no hay cache y falla la API, entonces null
+        if (!userRole) setUserRole(null);
       } finally {
         setLoading(false);
       }
