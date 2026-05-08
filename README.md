@@ -12,6 +12,8 @@ Aspersax es una plataforma que permite controlar y monitorear robots que aplican
 - Programación de jornadas de trabajo por sectores
 - Generación de reportes de aspersión y control
 - Dashboard con estadísticas de operabilidad y efectividad
+- **Landing Page informativa**: Presentación profesional del proyecto y su historia
+- **Chatbot Asistente IA**: Integración con Gemini Flash para soporte técnico y consultas sobre el proyecto y la Finca La Riverita
 
 ## Objetivos del Proyecto
 
@@ -34,7 +36,8 @@ Para dar cumplimiento a las fases metodológicas del desarrollo del proyecto (co
 | **2. Diseño (UI/UX y Datos)** | Figma (prototipado de interfaces), Draw.io (diagramas de BD). |
 | **3. Desarrollo (Backend)** | Python, Django, Django REST Framework, SimpleJWT. |
 | **4. Desarrollo (Frontend)** | React, TypeScript, Material UI, Vite, Axios, ExcelJS, JSPDF. |
-| **5. Base de Datos** | PostgreSQL. |
+| **5. Inteligencia Artificial** | Google AI Studio (Gemini Flash API). |
+| **6. Base de Datos** | PostgreSQL. |
 | **6. Pruebas (Testing)** | Postman (pruebas de API), React / Chrome DevTools. |
 | **7. Control de Versiones** | Git, GitHub (evidencia de mejora continua en los commits). |
 
@@ -91,6 +94,8 @@ cd frontend
 npm install
 ```
 
+Para el funcionamiento del Chatbot, asegúrate de configurar la API Key de Gemini en `frontend/src/components/Chatbot.tsx` o mediante variables de entorno.
+
 ## Cómo ejecutar
 
 Abrir dos terminales:
@@ -126,8 +131,8 @@ Aspersax_api/
 │   └── stats/               # Métricas
 ├── frontend/
 │   └── src/
-│       ├── components/      # Componentes reutilizables
-│       ├── pages/           # Páginas de la app
+│       ├── components/      # Componentes reutilizables (incluye Chatbot)
+│       ├── pages/           # Páginas de la app (incluye LandingPage)
 │       ├── services/        # Llamadas a la API
 │       └── interfaces/      # Tipos de TypeScript
 └── README.md

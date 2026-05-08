@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aspersax - Robótica Agrícola de Precisión</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="logo">
+                <span class="logo-icon">🚜</span>
+                <span class="logo-text">Aspersax</span>
+            </div>
+            <ul class="nav-links">
+                <li class="active" data-section="home"><i class="fas fa-seedling"></i> Nuestra Historia</li>
+                <li data-section="services"><i class="fas fa-microchip"></i> Tecnología y Cursos</li>
+                <li data-section="team"><i class="fas fa-users-cog"></i> El Equipo</li>
+                <li data-section="contact"><i class="fas fa-envelope"></i> Contacto</li>
+            </ul>
+            <div class="sidebar-footer">
+                <p>© 2024 Proyecto Aspersax</p>
+                <p>Finca La Riverita</p>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="content">
+            <!-- Home Section -->
+            <section id="home" class="active">
+                <div class="hero">
+                    <h1>Innovación en la <span class="highlight">Agricultura de Precisión</span></h1>
+                    <p class="subtitle">Protegiendo Finca La Riverita con tecnología autónoma y sostenible.</p>
+                </div>
+                <div class="timeline" id="history-container">
+                    <!-- Dynamic content -->
+                </div>
+            </section>
+
+            <!-- Services Section -->
+            <section id="services">
+                <h2 class="section-title">Capacitación y Soluciones Técnicas</h2>
+                <div class="grid" id="services-container">
+                    <!-- Dynamic content -->
+                </div>
+            </section>
+
+            <!-- Team Section -->
+            <section id="team">
+                <h2 class="section-title">Liderazgo Tecnológico</h2>
+                <div class="team-container" id="team-container">
+                    <!-- Dynamic content -->
+                </div>
+            </section>
+
+            <!-- Contact Section -->
+            <section id="contact">
+                <h2 class="section-title">Lleva Aspersax a tu Cultivo</h2>
+                <div class="contact-card">
+                    <form id="contact-form">
+                        <div class="form-group">
+                            <label>Nombre Completo</label>
+                            <input type="text" id="name" placeholder="Tu nombre" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Correo Electrónico</label>
+                            <input type="email" id="email" placeholder="tu@email.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Interés</label>
+                            <select id="interest">
+                                <option value="implementacion">Implementación en Finca</option>
+                                <option value="capacitacion">Capacitación Técnica</option>
+                                <option value="soporte">Soporte y Hardware</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Mensaje</label>
+                            <textarea id="message" placeholder="¿Cómo podemos ayudarte?"></textarea>
+                        </div>
+                        <button type="submit" class="btn-primary">Enviar Solicitud</button>
+                    </form>
+                </div>
+            </section>
+        </main>
+
+        <!-- Chatbot UI -->
+        <div class="chatbot-wrapper">
+            <button class="chatbot-toggle" id="chatbot-toggle">
+                <i class="fas fa-robot"></i>
+            </button>
+            <div class="chatbot-window" id="chatbot-window">
+                <div class="chatbot-header">
+                    <h3>Asistente Aspersax</h3>
+                    <button class="close-chat" id="close-chat">×</button>
+                </div>
+                <div class="chatbot-messages" id="chatbot-messages">
+                    <div class="message bot">¡Hola! Soy el asistente técnico de Aspersax. ¿Tienes dudas sobre nuestros robots o el control de malezas en Finca La Riverita?</div>
+                </div>
+                <div class="chatbot-input">
+                    <input type="text" id="chat-input" placeholder="Pregúntame sobre Aspersax...">
+                    <button id="send-chat"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="content.js"></script>
+    <script src="ui.js"></script>
+    <script src="chatbot.js"></script>
+</body>
+</html>

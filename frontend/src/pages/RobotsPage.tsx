@@ -12,11 +12,6 @@ import {
     DialogTitle,
     DialogContent,
     DialogActions,
-    TextField,
-    FormControl,
-    InputLabel,
-    Select,
-    MenuItem,
     Tooltip,
     CircularProgress,
     Skeleton,
@@ -35,7 +30,6 @@ import {
     Speed as SpeedIcon
 } from '@mui/icons-material';
 import { usePermissions } from '../hooks/usePermissions';
-import ProtectedComponent from '../components/ProtectedComponent';
 import { ConditionalButton, ConditionalIconButton } from '../components/ConditionalButton';
 import ReadOnlyModeAlert from '../components/ReadOnlyModeAlert';
 import robotsService from '../services/robotsService';
@@ -67,8 +61,9 @@ const RobotsPage: React.FC = () => {
         setLoading(true);
         try {
             const response = await robotsService.getAll();
-            // La API puede devolver results si está paginada
-            const data = response.data.results || response.data;
+            // La API puede devolver results si está paginada. Usamos any para evitar error de tipado en la validación dinámica.
+            const apiData = response.data as any;
+            const data = apiData.results || apiData;
             setRobots(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error('Error al cargar robots:', error);
@@ -261,6 +256,23 @@ const RobotsPage: React.FC = () => {
                     >
                         {selectedRobot?.estado === 'En Operación' ? 'Detener Robot' : 'Iniciar Robot'}
                     </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Diálogo de Configuración de Robot */}
+            <Dialog open={openConfigDialog} onClose={() => setOpenConfigDialog(false)} maxWidth="sm" fullWidth>
+                <DialogTitle sx={{ fontWeight: 700 }}>Configuración de {selectedRobot?.nombre}</DialogTitle>
+                <DialogContent>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                        Ajustes técnicos y parámetros de operación para el robot.
+                    </Typography>
+                    <Box sx={{ p: 2, bgcolor: 'grey.100', borderRadius: 2, textAlign: 'center' }}>
+                        <Typography variant="body1">Panel de configuración en desarrollo</Typography>
+                    </Box>
+                </DialogContent>
+                <DialogActions sx={{ p: 2 }}>
+                    <Button onClick={() => setOpenConfigDialog(false)}>Cerrar</Button>
+                    <Button variant="contained" onClick={() => setOpenConfigDialog(false)}>Guardar Cambios</Button>
                 </DialogActions>
             </Dialog>
 

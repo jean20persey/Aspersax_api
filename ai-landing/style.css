@@ -1,0 +1,323 @@
+:root {
+    --primary-blue: #0f172a;
+    --secondary-green: #10b981;
+    --accent-blue: #3b82f6;
+    --bg-white: #ffffff;
+    --bg-soft: #f8fafc;
+    --text-main: #1e293b;
+    --text-light: #64748b;
+    --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s ease;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Outfit', sans-serif;
+    background-color: var(--bg-soft);
+    color: var(--text-main);
+    overflow-x: hidden;
+}
+
+.app-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar Navigation */
+.sidebar {
+    width: 300px;
+    background: var(--primary-blue);
+    color: white;
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: 100vh;
+    z-index: 100;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 4rem;
+    letter-spacing: -0.5px;
+}
+
+.nav-links {
+    list-style: none;
+    flex-grow: 1;
+}
+
+.nav-links li {
+    padding: 1.2rem;
+    margin-bottom: 0.8rem;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+.nav-links li:hover, .nav-links li.active {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+}
+
+.nav-links li.active {
+    border-left: 5px solid var(--secondary-green);
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.sidebar-footer {
+    font-size: 0.8rem;
+    color: #64748b;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 2rem;
+}
+
+/* Main Content */
+.content {
+    margin-left: 300px;
+    flex-grow: 1;
+    padding: 5rem;
+    max-width: 1300px;
+}
+
+section {
+    display: none;
+    animation: slideUp 0.6s ease-out;
+}
+
+section.active {
+    display: block;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.hero {
+    margin-bottom: 5rem;
+}
+
+h1 {
+    font-size: 4rem;
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 2rem;
+    color: var(--primary-blue);
+}
+
+.highlight {
+    color: var(--secondary-green);
+}
+
+.subtitle {
+    font-size: 1.4rem;
+    color: var(--text-light);
+    max-width: 800px;
+}
+
+/* Timeline */
+.timeline-item {
+    background: white;
+    padding: 2.5rem;
+    border-left: 4px solid var(--secondary-green);
+    margin-left: 2rem;
+    margin-bottom: 2.5rem;
+    border-radius: 0 24px 24px 0;
+    box-shadow: var(--shadow);
+    position: relative;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -12px;
+    top: 2.5rem;
+    width: 20px;
+    height: 20px;
+    background: var(--secondary-green);
+    border-radius: 50%;
+    border: 4px solid var(--bg-soft);
+}
+
+/* Grid & Cards */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2.5rem;
+}
+
+.card {
+    background: white;
+    padding: 3rem;
+    border-radius: 32px;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+    border: 1px solid #f1f5f9;
+}
+
+.card:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.15);
+}
+
+.price {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--secondary-green);
+    margin: 2rem 0;
+}
+
+.btn-primary {
+    background: var(--secondary-green);
+    color: white;
+    border: none;
+    padding: 1.2rem 2.5rem;
+    border-radius: 18px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    width: 100%;
+    transition: var(--transition);
+}
+
+.btn-primary:hover {
+    background: #0d9488;
+    filter: brightness(1.1);
+}
+
+/* Form */
+.contact-card {
+    background: white;
+    padding: 4rem;
+    border-radius: 32px;
+    box-shadow: var(--shadow);
+    max-width: 800px;
+}
+
+.form-group {
+    margin-bottom: 2rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.8rem;
+    font-weight: 600;
+    color: var(--primary-blue);
+}
+
+.form-group input, .form-group select, .form-group textarea {
+    width: 100%;
+    padding: 1.2rem;
+    border-radius: 14px;
+    border: 2px solid #f1f5f9;
+    background: #f8fafc;
+    font-family: inherit;
+    font-size: 1rem;
+}
+
+.form-group input:focus {
+    border-color: var(--secondary-green);
+    outline: none;
+}
+
+/* Chatbot */
+.chatbot-wrapper {
+    position: fixed;
+    bottom: 3rem;
+    right: 3rem;
+    z-index: 1000;
+}
+
+.chatbot-toggle {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: var(--primary-blue);
+    color: white;
+    font-size: 1.8rem;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 15px 35px rgba(15, 23, 42, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.chatbot-toggle:hover {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.chatbot-window {
+    position: absolute;
+    bottom: 90px;
+    right: 0;
+    width: 400px;
+    height: 550px;
+    background: white;
+    border-radius: 32px;
+    box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.25);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #f1f5f9;
+}
+
+.chatbot-header {
+    background: var(--primary-blue);
+    color: white;
+    padding: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chatbot-messages {
+    flex-grow: 1;
+    padding: 2rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.message {
+    padding: 1rem 1.4rem;
+    border-radius: 20px;
+    max-width: 85%;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.message.bot { background: #f1f5f9; align-self: flex-start; border-bottom-left-radius: 4px; }
+.message.user { background: var(--secondary-green); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+
+.chatbot-input {
+    padding: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    border-top: 1px solid #f1f5f9;
+}
+
+.chatbot-input input {
+    flex-grow: 1;
+    border: none;
+    background: #f8fafc;
+    padding: 1rem;
+    border-radius: 14px;
+}

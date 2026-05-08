@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { Box } from '@mui/material';
@@ -16,6 +16,8 @@ import MalezasPage from './pages/MalezasPage';
 import ReportesPage from './pages/ReportesPage';
 import UsuariosPage from './pages/UsuariosPage';
 import ProfilePage from './pages/ProfilePage';
+import LandingPage from './pages/LandingPage';
+import Chatbot from './components/Chatbot';
 
 // Tema personalizado
 const theme = createTheme({
@@ -117,6 +119,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => (
     >
       {children}
     </Box>
+    <Chatbot />
   </Box>
 );
 
@@ -130,8 +133,9 @@ function App() {
           <Route path="/registro" element={<RegisterPage />} />
           <Route path="/recuperar-password" element={<RecuperarPasswordPage />} />
           
-          {/* Ruta raíz redirige a /login */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
+          {/* Ruta raíz redirige a la Landing Page */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/landing" element={<LandingPage />} />
           
           {/* Ruta para solicitar permisos de administrador */}
           <Route 
