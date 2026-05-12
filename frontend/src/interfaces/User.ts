@@ -13,4 +13,10 @@ export interface LoginCredentials {
 export interface LoginResponse {
     access: string;
     refresh: string;
+    user?: {
+        username: string;
+        email: string;
+        rol: string;
+        full_name: string;
+    };
 } 

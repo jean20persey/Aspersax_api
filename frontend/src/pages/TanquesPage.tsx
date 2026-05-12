@@ -4,8 +4,6 @@ import {
     Typography, 
     Box, 
     Card, 
-    CardContent, 
-    Button, 
     IconButton, 
     Tooltip, 
     Chip, 
@@ -26,7 +24,6 @@ import {
     Edit as EditIcon, 
     Delete as DeleteIcon, 
     Refresh as RefreshIcon,
-    Opacity as OpacityIcon
 } from '@mui/icons-material';
 import { tanquesService, Tanque } from '../services/api';
 import TanqueForm, { TanqueFormData } from '../components/TanqueForm';
