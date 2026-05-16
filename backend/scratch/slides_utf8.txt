@@ -1,0 +1,61 @@
+--- Slide 1 ---
+DESARROLLO DE UN SISTEMA DE GESTIËN Y MONITOREO PARA UN ROBOT FUMIGADOR DE FORRAJE EN LA FINCA LA RIVERITA 
+Ciencia, TecnologÝa e Innovaci¾n III
+
+--- Slide 2 ---
+PRESENTADO POR:
+Fredy Jean Pier RodrÝguez Ca±on
+fjeanpierrodriguez@ucundinamarca.edu.co
+IngenierÝa de Sistemas y Computaci¾n
+Estudiante VIII Semestre
+--- Slide 3 ---
+
+RESUMEN
+Se evidencia presencia excesiva de maleza Romaza (Rumex obtusifolius) en la finca La Riverita, lo cual provoca una disminuci¾n de producci¾n lßctea debido al efecto en la nutrici¾n del ganado y se propone una alternativa tecnol¾gica moderna para generar un control sobre las malezas y por lo tanto de la producci¾n lßctea de la finca.
+--- Slide 4 ---
+
+PREGUNTA PROBLEMA
+┐C¾mo puede el desarrollo de un sistema de gesti¾n y monitoreo ser una alternativa que ayude a eliminar maleza y restablecer los niveles ¾ptimos de producci¾n lechera en la finca    
+La Riverita?
+
+--- Slide 5 ---
+OBJETIVO GENERAL
+Desarrollar un sistema de gesti¾n y monitoreo integrado a un robot fumigador que permita supervisar y optimizar los procesos de fumigaci¾n, con el fin de contribuir al control eficiente de la maleza romaza en la finca La Riverita, ubicada en el municipio de F·quene.
+
+
+--- Slide 6 ---
+
+OBJETIVOS ESPEC═FICOS
+Documentar los requisitos funcionales del sistema a partir de historias de usuario y casos de uso, estableciendo al menos 20 funcionalidades clave que permitan la supervisi¾n y el registro de las actividades de fumigaci¾n.
+
+
+Dise±ar la arquitectura del backend del sistema utilizando frameworks del lenguaje Python, junto con el desarrollo de interfaces grßficas en JavaScript y HTML, garantizando al usuario una interacci¾n intuitiva mediante al menos 7 m¾dulos funcionales.
+
+
+Evaluar el funcionamiento del sistema ASPERSAX mediante la ejecuci¾n de pruebas funcionales y de rendimiento, verificando el cumplimiento de los requerimientos establecidos y el correcto desempe±o del sistema en condiciones simuladas o reales.
+
+
+--- Slide 7 ---
+METODOLOG═A
+--- Slide 8 ---
+MARCO CONCEPTUAL
+--- Slide 9 ---
+RESULTADOS
+https://github.com/jean20persey/Aspersax_api
+
+--- Slide 10 ---
+CONCLUSIONES
+Se documentaron aproximadamente 56 funcionalidades, estableciendo una base clara para el desarrollo del sistema; los cuales actualmente se encuentran en proceso de validaci¾n integral.
+
+
+Se desarroll¾ la arquitectura del sistema con Python y JavaScript, generando 7 m¾dulos funcionales que se encuentran en fase de integraci¾n y ajustes finales.
+Se han venido realizando pruebas unitarias exitosas, se planean pruebas de integraci¾n y rendimiento para validar el desempe±o del sistema simulando condiciones reales.
+--- Slide 11 ---
+REFERENCIAS
+Gonzßlez, P., & Torres, M. (2021). Arquitectura de microservicios para SIG empresariales.: https://www.techinfra.org/microservicios_SIG
+Igual, R., & Medrano, C. (2008). Tutorial de OpenCV. Laboratorio de visi¾n porácomputadora. Obtenido de : https://www.academia.edu/download/50259908/tutorial_opencv.pdf
+L¾pez, M., & RamÝrez, G. (2020). Eficiencia operativa y reducci¾n de costos mediante la implementaci¾n de SIG en PYMEs.  https://www.researchgate.net/publication/eficiencia_SIG_pymes
+PaLaTierra. (2023). Plataforma digital para la gesti¾n agrÝcola. https://palatierra.com
+Team, G. (2024, November 1). La importancia de la metodologÝa Agile en las empresas. Game Strategies. https://gamestrategies.io/es/blog/la-importancia-de-la-metodologia-agile-en-las-empresas/
+Wagner Mendivelso, M. (2018). Evaluaci¾n de la viabilidad en la aplicaci¾n de tecnologÝa LiDAR para la detecci¾n de trayectorias y finales de surco en un cultivo de papa usando un robot Rover (Doctoral dissertation, Escuela Colombiana de IngenierÝa Julio Garavito).
+
