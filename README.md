@@ -116,7 +116,7 @@ El frontend corre en `http://localhost:3000` y el backend en `http://localhost:8
 
 ## Estructura del proyecto
 
-```
+```text
 Aspersax_api/
 ├── backend/
 │   ├── aspersax_api/        # Configuración de Django
@@ -130,11 +130,18 @@ Aspersax_api/
 │   ├── emails/              # Envío de correos
 │   └── stats/               # Métricas
 ├── frontend/
+│   ├── public/
+│   │   └── ai-landing/      # Landing page estática (HTML/CSS/JS)
 │   └── src/
 │       ├── components/      # Componentes reutilizables (incluye Chatbot)
-│       ├── pages/           # Páginas de la app (incluye LandingPage)
+│       ├── constants/       # Constantes y variables globales
+│       ├── hooks/           # Custom hooks de React
+│       ├── interfaces/      # Tipos de TypeScript
+│       ├── pages/           # Páginas de la app (incluye LandingPage principal)
 │       ├── services/        # Llamadas a la API
-│       └── interfaces/      # Tipos de TypeScript
+│       └── tests/           # Pruebas automatizadas
+├── install.bat              # Script de instalación rápida (Windows)
+├── install.sh               # Script de instalación rápida (Linux/Mac)
 └── README.md
 ```
 
