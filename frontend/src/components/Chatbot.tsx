@@ -2,7 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Box, TextField, IconButton, Typography, Paper, Fab, Zoom, Fade } from '@mui/material';
 import { SmartToy as RobotIcon, Close as CloseIcon, Send as SendIcon } from '@mui/icons-material';
 
-const API_KEY = 'AIzaSyDsPwBWXLZ2wFWVKKXbVCa8vyaEWq8UhkU';
+// El API Key ya no está harcodeado aquí para evitar que se filtre en GitHub.
+// Debes crear un archivo .env en la carpeta frontend/ con la variable VITE_GEMINI_API_KEY
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
 const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${API_KEY}`;
 
 const systemInstruction = `
