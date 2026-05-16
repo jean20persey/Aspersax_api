@@ -9,7 +9,6 @@ import {
 } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import DashboardIcon from '@mui/icons-material/Dashboard';
-import HomeIcon from '@mui/icons-material/Home';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import WaterDropIcon from '@mui/icons-material/WaterDrop';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
@@ -51,11 +50,6 @@ const Navigation = () => {
 
   const getMenuItems = () => {
     const baseItems = [
-      { 
-        text: 'Inicio', 
-        icon: <HomeIcon />, 
-        path: '/landing',
-      },
       { 
         text: 'Dashboard', 
         icon: <DashboardIcon />, 

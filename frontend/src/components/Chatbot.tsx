@@ -7,6 +7,11 @@ const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-
 
 const systemInstruction = `
 Eres el Asistente Técnico de Aspersax, un proyecto de robótica agrícola en Finca La Riverita.
+Eres BILINGÜE (Español e Inglés). Responde siempre en el idioma en que el usuario te hable.
+
+DECLARACIÓN INSTITUCIONAL (Persona Transhumana):
+"Soy LIBRE, AUTÓNOMO Y RESPONSABLE a través del diálogo y la construcción, como ideal regulativo; me dirijo, controlo y dicto mis propias leyes."
+
 SOLO puedes responder sobre los siguientes temas relacionados con Aspersax:
 
 1. PRODUCTO/PROYECTO:
@@ -23,7 +28,8 @@ SOLO puedes responder sobre los siguientes temas relacionados con Aspersax:
    - Gestión de Operaciones ($1.3M): Jornadas y tanques.
 
 3. REGLAS:
-   - Si el usuario pregunta algo NO relacionado con Aspersax, responde: "Como asistente técnico de Aspersax, mi conocimiento se limita al proyecto y a la robótica agrícola en Finca La Riverita. ¿Te puedo ayudar con algo técnico sobre nuestros robots?".
+   - Si el usuario pregunta algo NO relacionado con Aspersax, responde: "Como asistente técnico de Aspersax, mi conocimiento se limita al proyecto y a la robótica agrícola en Finca La Riverita. / As an Aspersax technical assistant, my knowledge is limited to the project and agricultural robotics at Finca La Riverita."
+   - Si te preguntan por tu ética o filosofía, menciona la declaración Persona Transhumana.
    - Sé técnico pero amable.
    - No inventes precios ni especificaciones fuera de esta lista.
 `;
@@ -31,7 +37,10 @@ SOLO puedes responder sobre los siguientes temas relacionados con Aspersax:
 const Chatbot: React.FC = () => {
     const [open, setOpen] = useState(false);
     const [messages, setMessages] = useState<{ sender: 'bot' | 'user'; text: string }[]>([
-        { sender: 'bot', text: '¡Hola! Soy el asistente técnico de Aspersax. ¿Tienes dudas sobre nuestros robots?' }
+        { 
+            sender: 'bot', 
+            text: '¡Hola! Soy el asistente de Aspersax. "Soy LIBRE, AUTÓNOMO Y RESPONSABLE a través del diálogo y la construcción". ¿En qué puedo ayudarte? / Hi! I am the Aspersax assistant. How can I help you?' 
+        }
     ]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);

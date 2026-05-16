@@ -160,5 +160,27 @@ Aspersax_api/
 | PATCH | `/api/jornadas/{id}/actualizar/` | Actualizar jornada |
 | DELETE | `/api/jornadas/{id}/eliminar/` | Eliminar jornada |
 | GET | `/api/dashboard/stats/` | Estadísticas del dashboard |
-| GET | `/api/reportes/` | Listar reportes |
+## Actividad Académica: Chatbot Multilingüe
+
+Este proyecto incluye una implementación avanzada de un chatbot de Inteligencia Artificial como parte de la formación en Gestión del Conocimiento.
+
+### 1. Integración de IA
+Se ha integrado la API de **Gemini Flash** de Google para proporcionar asistencia técnica en tiempo real. El chatbot está configurado con un "System Prompt" que limita su conocimiento al dominio de Aspersax y la Finca La Riverita.
+
+### 2. Bilingüismo (Español/Inglés)
+El chatbot es capaz de procesar y responder consultas en ambos idiomas de forma fluida. Detecta automáticamente el idioma del usuario para mantener la coherencia en la conversación.
+
+### 3. Declaración Persona Transhumana
+Siguiendo los lineamientos institucionales, el chatbot integra la filosofía de la "Persona Transhumana":
+*"Soy LIBRE, AUTÓNOMO Y RESPONSABLE a través del diálogo y la construcción, como ideal regulativo; me dirijo, controlo y dicto mis propias leyes."*
+
+Esta declaración se encuentra presente en:
+- El mensaje de bienvenida inicial.
+- El marco ético de respuestas del modelo.
+
+### 4. Tecnologías Utilizadas
+- **Frontend:** React, Material UI.
+- **IA:** Google Generative AI (Gemini Flash API).
+- **Idioma:** TypeScript.
+- **Despliegue:** Integrado en el Dashboard de Aspersax.
 
